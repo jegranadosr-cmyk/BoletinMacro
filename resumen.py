@@ -41,6 +41,11 @@ def generate_bullets(data):
         top_bono = max(bono_validos, key=lambda d: d["bono_10y"])
         bullets.append(f"El bono a 10 años de {top_bono['pais']} rinde {fmt_pct(top_bono['bono_10y'])}, el más alto del grupo.")
 
+    riesgo_validos = [d for d in data.get("deuda_bonos", []) if d.get("riesgo_pais_pb") is not None]
+    if riesgo_validos:
+        top_riesgo = max(riesgo_validos, key=lambda d: d["riesgo_pais_pb"])
+        bullets.append(f"{top_riesgo['pais']} tiene el mayor riesgo país del grupo, {top_riesgo['riesgo_pais_pb']:.0f} puntos básicos (S&P: {top_riesgo.get('rating_sp') or '-'}).")
+
     balanza_validos = [d for d in data.get("macro_indicadores", []) if d["balanza_comercial_pib"] is not None]
     if balanza_validos:
         top_superavit = max(balanza_validos, key=lambda d: d["balanza_comercial_pib"])

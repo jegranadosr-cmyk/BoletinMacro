@@ -92,9 +92,17 @@ def render_html(data, template_name):
     )
 
 
+PAGE_WIDTH_PX = 2000
+PAGE_HEIGHT_PX = 2940
+DEVICE_SCALE = 2
+VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE_HEIGHT_PX // DEVICE_SCALE}
+
+
 def render_bulletin(data, out_dir, pages=("page1.html", "page2.html", "page3.html")):
-    """Render each page and pad every .page container to the height of the
-    tallest one, so the images sent to Telegram all come out the same size.
+    """Render each page at a fixed 2000x2940px output, every time, so the
+    images sent to Telegram are all the same size regardless of content
+    length (shorter content leaves white space at the bottom; content taller
+    than the viewport is cropped rather than resized).
     """
     os.makedirs(out_dir, exist_ok=True)
 
@@ -110,21 +118,13 @@ def render_bulletin(data, out_dir, pages=("page1.html", "page2.html", "page3.htm
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
-            browser_pages = []
-            heights = []
-            for tmp_path in tmp_paths:
-                bpage = browser.new_page(viewport={"width": 1000, "height": 400}, device_scale_factor=2)
+            for i, tmp_path in enumerate(tmp_paths, start=1):
+                bpage = browser.new_page(viewport=VIEWPORT, device_scale_factor=DEVICE_SCALE)
                 bpage.goto("file:///" + tmp_path.replace("\\", "/"))
+                bpage.evaluate(f"document.querySelector('.page').style.minHeight = '{VIEWPORT['height']}px'")
                 bpage.wait_for_timeout(400)
-                heights.append(bpage.evaluate("document.querySelector('.page').scrollHeight"))
-                browser_pages.append(bpage)
-
-            max_height = max(heights)
-
-            for i, bpage in enumerate(browser_pages, start=1):
-                bpage.evaluate(f"document.querySelector('.page').style.minHeight = '{max_height}px'")
                 out_path = os.path.join(out_dir, f"page{i}.png")
-                bpage.screenshot(path=out_path, full_page=True)
+                bpage.screenshot(path=out_path)
                 out_paths.append(out_path)
                 bpage.close()
             browser.close()

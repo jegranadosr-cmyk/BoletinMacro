@@ -76,6 +76,10 @@ def build_data():
         resumen_coyuntural.append({
             "pais": d["pais"], "tasa_label": tasa_label,
             "deuda_pib": d["deuda_pib"], "bono_10y": d["bono_10y"],
+            "riesgo_pais_pb": d.get("riesgo_pais_pb"),
+            "rating_moodys": d.get("rating_moodys"),
+            "rating_sp": d.get("rating_sp"),
+            "rating_fitch": d.get("rating_fitch"),
         })
     data["resumen_coyuntural"] = resumen_coyuntural
 

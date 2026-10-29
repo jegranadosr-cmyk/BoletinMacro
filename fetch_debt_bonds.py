@@ -24,6 +24,8 @@ DEBT_URL = "https://countryeconomy.com/national-debt"
 BONDS_URL = "https://countryeconomy.com/bonds"
 COLOMBIA_BOND_URL = "https://countryeconomy.com/bonds/colombia"
 CHINA_BOND_URL = "https://tradingeconomics.com/china/government-bond-yield"
+RISK_PREMIUM_URL = "https://countryeconomy.com/risk-premium/{slug}"
+RATINGS_URL = "https://countryeconomy.com/ratings"
 
 PAISES = [
     ("Francia", "france"),
@@ -78,14 +80,52 @@ def fetch_bond_yields():
     return out
 
 
+def fetch_risk_premium():
+    """Riesgo país in basis points, from each country's countryeconomy.com page
+    (the site's own 'risk premium' reading -- spread over the reference bond
+    it tracks internally, same convention used across their country pages)."""
+    out = {}
+    for _, slug in PAISES:
+        try:
+            html = _fetch_text(RISK_PREMIUM_URL.format(slug=slug))
+            m = re.search(r'class="numero" data-value="(-?[\d.]+)"', html)
+            out[slug] = float(m.group(1)) if m else None
+        except Exception:
+            out[slug] = None
+    return out
+
+
+def fetch_ratings():
+    """Moody's / S&P / Fitch sovereign credit ratings from the overview table."""
+    html = _fetch_text(RATINGS_URL)
+    out = {}
+    for _, slug in PAISES:
+        idx = html.find(f'href="/ratings/{slug}"')
+        if idx == -1:
+            out[slug] = (None, None, None)
+            continue
+        row_end = html.find("</tr>", idx)
+        row = html[idx:row_end]
+        vals = re.findall(r'class="padleft">\s*([^<]+?)\s*</span>', row)
+        out[slug] = tuple(vals) if len(vals) == 3 else (None, None, None)
+    return out
+
+
 def fetch_debt_and_bonds():
     debt = fetch_debt_to_gdp()
     bonds = fetch_bond_yields()
+    riesgo = fetch_risk_premium()
+    ratings = fetch_ratings()
     out = []
     for nombre, slug in PAISES:
+        moodys, sp, fitch = ratings.get(slug, (None, None, None))
         out.append({
             "pais": nombre,
             "deuda_pib": debt.get(slug),
             "bono_10y": bonds.get(slug),
+            "riesgo_pais_pb": riesgo.get(slug),
+            "rating_moodys": moodys,
+            "rating_sp": sp,
+            "rating_fitch": fitch,
         })
     return out
