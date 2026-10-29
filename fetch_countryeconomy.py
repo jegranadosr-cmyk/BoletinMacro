@@ -32,6 +32,7 @@ GDP_URL = "https://countryeconomy.com/gdp"
 CPI_URL = "https://countryeconomy.com/cpi"
 UNEMPLOYMENT_URL = "https://countryeconomy.com/unemployment"
 TRADE_BALANCE_URL = "https://countryeconomy.com/trade/balance"
+DEFICIT_URL = "https://countryeconomy.com/deficit"
 
 PAISES = [
     ("Colombia", "colombia"),
@@ -111,11 +112,22 @@ def fetch_trade_balance_pct_gdp():
     return out
 
 
+def fetch_deficit_pct_gdp():
+    html = _fetch_text(DEFICIT_URL)
+    out = {}
+    for _, slug in PAISES:
+        row = _row_html(html, "/deficit/", slug)
+        plain = _plain_numeros(row) if row else []
+        out[slug] = plain[0] if plain else None
+    return out
+
+
 def fetch_macro_indicators():
     gdp = fetch_gdp_growth()
     cpi = fetch_cpi_yoy()
     unemployment = fetch_unemployment()
     trade = fetch_trade_balance_pct_gdp()
+    deficit = fetch_deficit_pct_gdp()
     out = []
     for nombre, slug in PAISES:
         out.append({
@@ -124,5 +136,6 @@ def fetch_macro_indicators():
             "inflacion": cpi.get(slug),
             "desempleo": unemployment.get(slug),
             "balanza_comercial_pib": trade.get(slug),
+            "deficit_fiscal_pib": deficit.get(slug),
         })
     return out

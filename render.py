@@ -92,26 +92,45 @@ def render_html(data, template_name):
     )
 
 
-def html_to_png(html_str, out_path):
-    tmp_html = os.path.abspath(out_path.replace(".png", ".tmp.html"))
-    with open(tmp_html, "w", encoding="utf-8") as f:
-        f.write(html_str)
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page(viewport={"width": 1000, "height": 400}, device_scale_factor=2)
-        page.goto("file:///" + tmp_html.replace("\\", "/"))
-        page.wait_for_timeout(400)
-        page.screenshot(path=out_path, full_page=True)
-        browser.close()
-    os.remove(tmp_html)
-
-
 def render_bulletin(data, out_dir, pages=("page1.html", "page2.html", "page3.html")):
+    """Render each page and pad every .page container to the height of the
+    tallest one, so the images sent to Telegram all come out the same size.
+    """
     os.makedirs(out_dir, exist_ok=True)
-    out_paths = []
+
+    tmp_paths = []
     for i, template_name in enumerate(pages, start=1):
         html_str = render_html(data, template_name)
-        out_path = os.path.join(out_dir, f"page{i}.png")
-        html_to_png(html_str, out_path)
-        out_paths.append(out_path)
+        tmp_path = os.path.abspath(os.path.join(out_dir, f"_tmp_page{i}.html"))
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            f.write(html_str)
+        tmp_paths.append(tmp_path)
+
+    out_paths = []
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            browser_pages = []
+            heights = []
+            for tmp_path in tmp_paths:
+                bpage = browser.new_page(viewport={"width": 1000, "height": 400}, device_scale_factor=2)
+                bpage.goto("file:///" + tmp_path.replace("\\", "/"))
+                bpage.wait_for_timeout(400)
+                heights.append(bpage.evaluate("document.querySelector('.page').scrollHeight"))
+                browser_pages.append(bpage)
+
+            max_height = max(heights)
+
+            for i, bpage in enumerate(browser_pages, start=1):
+                bpage.evaluate(f"document.querySelector('.page').style.minHeight = '{max_height}px'")
+                out_path = os.path.join(out_dir, f"page{i}.png")
+                bpage.screenshot(path=out_path, full_page=True)
+                out_paths.append(out_path)
+                bpage.close()
+            browser.close()
+    finally:
+        for tmp_path in tmp_paths:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
     return out_paths

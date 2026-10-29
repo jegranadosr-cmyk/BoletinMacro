@@ -8,7 +8,8 @@ import fetch_countryeconomy as fce
 import fetch_eurostat as feu
 import fetch_rates as fr
 import fetch_debt_bonds as fdb
-import fetch_news as fn
+import fetch_market as fmkt
+import fetch_news as fnews
 import resumen as rs
 import render as rd
 import send_telegram as st
@@ -41,7 +42,7 @@ def build_data():
     if err:
         errors.append(f"EurostatMacro: {err}")
         r = {"pais": "Eurozona", "pib_crecimiento": None, "inflacion": None,
-             "desempleo": None, "balanza_comercial_pib": None}
+             "desempleo": None, "balanza_comercial_pib": None, "deficit_fiscal_pib": None}
     # Insert Eurozona after Colombia and EE.UU., before China/Japon
     macro_indicadores = macro_indicadores[:2] + [r] + macro_indicadores[2:]
     data["macro_indicadores"] = macro_indicadores
@@ -78,8 +79,14 @@ def build_data():
         })
     data["resumen_coyuntural"] = resumen_coyuntural
 
+    # Mercados clave: dolar (DXY), EUR/USD, USD/COP, oro, petroleo WTI
+    r, err = safe(fmkt.fetch_mercados_clave)
+    data["mercados_clave"] = r if not err else []
+    if err:
+        errors.append(f"MercadosClave: {err}")
+
     # Noticias relevantes de macroeconomia y coyuntura (TradingEconomics)
-    r, err = safe(fn.fetch_relevant_news)
+    r, err = safe(fnews.fetch_relevant_news)
     data["noticias"] = r if not err else []
     if err:
         errors.append(f"Noticias: {err}")

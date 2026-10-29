@@ -9,6 +9,8 @@ Verified live (Oct 2026):
 - Unemployment: une_rt_m, seasonally adjusted, total, both sexes.
 - Trade balance: not reliably available under a short Eurostat code within
   reasonable effort -- left as None; the bulletin shows "-" for this cell.
+- Fiscal deficit % GDP: gov_10dd_edpt1, na_item=B9 (net lending/borrowing),
+  sector=S13 (general government), unit=PC_GDP.
 
 Eurostat uses different aggregate geo codes per dataset vintage (EA20 vs
 EA21 vs EA19), so each fetch tries a short list of candidates.
@@ -76,14 +78,21 @@ def fetch_unemployment():
     return val, fecha
 
 
+def fetch_deficit_pct_gdp():
+    val, fecha = _try_geos("gov_10dd_edpt1", "na_item=B9&sector=S13&unit=PC_GDP")
+    return val, fecha
+
+
 def fetch_macro_indicators():
     pib, _ = fetch_gdp_growth()
     ipc, _ = fetch_cpi_yoy()
     desempleo, _ = fetch_unemployment()
+    deficit, _ = fetch_deficit_pct_gdp()
     return {
         "pais": "Eurozona",
         "pib_crecimiento": pib,
         "inflacion": ipc,
         "desempleo": desempleo,
         "balanza_comercial_pib": None,
+        "deficit_fiscal_pib": deficit,
     }
