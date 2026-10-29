@@ -12,8 +12,8 @@
     </div>
 
     <table class="boletin-table">
-      <caption class="caption-lg">Riesgo país y calificación crediticia</caption>
-      <thead><tr><th>País</th><th class="num">Riesgo país (pb)</th><th class="num">Moody's</th><th class="num">S&amp;P</th><th class="num">Fitch</th></tr></thead>
+      <caption class="caption-lg">Diferencial de bono 10A y calificación crediticia</caption>
+      <thead><tr><th>País</th><th class="num">Dif. 10A vs. ref. (pb)</th><th class="num">Moody's</th><th class="num">S&amp;P</th><th class="num">Fitch</th></tr></thead>
       <tbody>
       {% for d in resumen_coyuntural %}
         <tr>
@@ -27,7 +27,9 @@
       </tbody>
     </table>
     <div class="footnote">
-      Riesgo país: prima de riesgo en puntos básicos. Calificación crediticia soberana de largo plazo en moneda extranjera. Fuente: countryeconomy.com.
+      Diferencial del bono soberano a 10 años frente al bono de referencia (Bund alemán; Alemania se mide frente al Treasury de EE.UU., ya que no puede compararse contra sí misma).
+      <strong>No equivale al riesgo país (EMBI/CDS)</strong>: incluye efectos de moneda, inflación esperada y liquidez que el EMBI o un CDS no tienen, por lo que no es comparable 1 a 1 entre monedas distintas.
+      Calificación crediticia soberana de largo plazo en moneda extranjera, según countryeconomy.com -- la fecha de la última acción de cada agencia puede no estar actualizada en la fuente; verificar directamente con la agencia ante cualquier duda.
     </div>
 
     <table class="boletin-table" style="margin-top:22px;">
@@ -37,7 +39,7 @@
       {% for m in mercados_clave %}
         <tr>
           <td class="name">{{ m.nombre }}</td>
-          <td class="num">{{ fmt_price(m.price) }}</td>
+          <td class="num">{{ fmt_fx(m.price) if m.nombre == 'EUR/USD' else fmt_price(m.price) }}</td>
           <td class="num">{{ pct_span(m.pct_day) }}</td>
           <td class="num">{{ pct_span(m.pct_month) }}</td>
         </tr>
@@ -45,7 +47,7 @@
       </tbody>
     </table>
     <div class="footnote">
-      Lectura rápida de mercado: fortaleza del dólar (DXY), tipo de cambio EUR/USD y USD/COP, oro (cobertura/refugio) y petróleo WTI (presión inflacionaria vía energía). Fuente: Yahoo Finance.
+      Lectura rápida de mercado: fortaleza del dólar (DXY), tipo de cambio EUR/USD y USD/COP, oro (cobertura/refugio) y petróleo WTI (presión inflacionaria vía energía). Verde/rojo = sube/baja el nivel mostrado (en USD/COP, verde significa que el dólar sube frente al peso). Fuente: Yahoo Finance.
     </div>
 
     <div class="section-title" style="margin-top:22px;">NOTICIAS RELEVANTES DE MACROECONOMÍA Y COYUNTURA</div>

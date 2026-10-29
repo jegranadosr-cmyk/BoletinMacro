@@ -28,6 +28,20 @@ def pct_plain(v):
     return f"{sign}{v:.2f}%"
 
 
+def level_pct(v):
+    """For level values (inflación, desempleo), not variations -- no forced '+'."""
+    if v is None:
+        return "-"
+    return f"{v:.2f}%"
+
+
+def fmt_fx(v):
+    """4 decimals for FX pairs quoted close to 1 (EUR/USD etc.)."""
+    if v is None:
+        return "-"
+    return f"{v:,.4f}"
+
+
 def pct_span(v):
     if v is None:
         return '<span class="na">-</span>'
@@ -81,6 +95,8 @@ def _env():
         fmt_usd_billions=fmt_usd_billions,
         fmt_usd_billions_plain=fmt_usd_billions_plain,
         pct_plain=pct_plain,
+        level_pct=level_pct,
+        fmt_fx=fmt_fx,
         pct_span=lambda v: _markup(pct_span(v)),
         pct_span_compact=lambda v: _markup(pct_span_compact(v)),
         arrow=arrow,

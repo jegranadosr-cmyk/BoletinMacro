@@ -69,6 +69,27 @@ def fetch_cpi_yoy():
     return val, fecha
 
 
+# ISO2 geo codes for the 4 Eurozone members this bulletin breaks out individually.
+EUROZONE_COUNTRY_GEOS = {
+    "Francia": "FR", "Alemania": "DE", "Italia": "IT", "España": "ES",
+}
+
+
+def fetch_hicp_country(pais):
+    """HICP (harmonized, Eurostat) for one Eurozone member -- used instead of
+    countryeconomy.com's national CPI so every Eurozone row is on the same
+    HICP basis as the Eurozona aggregate (national CPI and HICP can diverge
+    by multiple points, e.g. Spain's national CPI vs HICP in Oct 2026)."""
+    geo = EUROZONE_COUNTRY_GEOS[pais]
+    url = f"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_manr?format=JSON&coicop=CP00&geo={geo}&lang=en"
+    try:
+        data = _fetch_json(url)
+        val, _ = _latest_value(data)
+        return val
+    except Exception:
+        return None
+
+
 def fetch_unemployment():
     val, fecha = _try_geos("une_rt_m", "s_adj=SA&age=TOTAL&unit=PC_ACT&sex=T")
     return val, fecha

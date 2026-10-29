@@ -19,6 +19,7 @@
     <div class="hero-right">
       <div class="label">F E C H A</div>
       <div class="date">{{ fecha_larga }}</div>
+      <div class="cutoff">Datos al cierre de {{ hora_corte }}</div>
     </div>
   </div>
 
@@ -26,7 +27,7 @@
     <table class="boletin-table">
       <caption class="caption-lg">Crecimiento económico, inflación y desempleo</caption>
       <thead><tr>
-        <th>País</th><th class="num">PIB 1A</th><th class="num">PIB 5A</th><th class="num">PIB 20A</th>
+        <th>País</th><th class="num">PIB 1A</th><th class="num">PIB 5A</th>
         <th class="num">Inflación</th><th class="num">Desempleo</th>
       </tr></thead>
       <tbody>
@@ -35,22 +36,22 @@
           <td class="name">{{ d.pais }}</td>
           <td class="num">{{ pct_span(d.pib_1a) }}</td>
           <td class="num">{{ pct_span(d.pib_5a) }}</td>
-          <td class="num">{{ pct_span(d.pib_20a) }}</td>
-          <td class="num">{{ pct_plain(d.inflacion) }}</td>
-          <td class="num">{{ pct_plain(d.desempleo) }}</td>
+          <td class="num">{{ level_pct(d.inflacion) }}</td>
+          <td class="num">{{ level_pct(d.desempleo) }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
     <div class="footnote">
-      PIB 1A/5A/20A: variación promedio anual del PIB real (CAGR) a 1, 5 y 20 años. Inflación: variación interanual del IPC/HICP.
-      Fuentes: Banco Mundial (PIB), countryeconomy.com (inflación y desempleo, Eurostat para Eurozona). Desempleo de China no disponible en la fuente.
+      PIB 1A/5A: variación promedio anual del PIB real (CAGR, dato anual del Banco Mundial, año de referencia {{ pib_anio_ref }} -- no es el último trimestre, que suele publicarse antes que el cierre anual).
+      Inflación: variación interanual del IPC (HICP para los 4 países de la Eurozona, mismo criterio que el agregado Eurozona).
+      Fuentes: Banco Mundial (PIB), Eurostat (inflación Eurozona), countryeconomy.com (inflación resto y desempleo). Desempleo de China no disponible en la fuente.
     </div>
 
     <table class="boletin-table" style="margin-top:22px;">
       <caption class="caption-lg">Balanza comercial, fiscal y cuenta corriente</caption>
       <thead><tr>
-        <th>País</th><th class="num">Bal. Comercial</th><th class="num">Déficit Fiscal</th>
+        <th>País</th><th class="num">Bal. Comercial</th><th class="num">Balance Fiscal</th>
         <th class="num">Cta. Corriente</th><th class="num">Cta. Capital</th><th class="num">Reservas Int.</th>
       </tr></thead>
       <tbody>
@@ -67,7 +68,7 @@
       </tbody>
     </table>
     <div class="footnote">
-      Balanza comercial, déficit fiscal y cuenta corriente: % del PIB. Cuenta de capital y reservas internacionales: miles de millones de dólares (US$B).
+      Balanza comercial, balance fiscal y cuenta corriente: % del PIB (negativo = déficit, positivo = superávit). Cuenta de capital y reservas internacionales: miles de millones de dólares (US$B).
       Fuentes: countryeconomy.com (Eurostat para Eurozona) y Banco Mundial (cuenta corriente, cuenta de capital, reservas). Cuenta de capital de Colombia no disponible en la fuente.
     </div>
 
@@ -86,7 +87,7 @@
       </tbody>
     </table>
     <div class="footnote">
-      Tasa de política monetaria: Fed (EE.UU.), BCE (Francia/Alemania/Italia/España), PBOC (China), BOJ (Japón), BanRep (Colombia).
+      Tasa de política monetaria: Fed (EE.UU.), BCE -- facilidad de depósito, no confundir con la tasa de operaciones principales/MRO que suele citar la prensa -- (Francia/Alemania/Italia/España), PBOC (China), BOJ (Japón), BanRep (Colombia).
       Deuda/PIB y bono a 10 años: countryeconomy.com y tradingeconomics.com (bono China).
     </div>
   </div>

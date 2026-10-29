@@ -56,6 +56,17 @@ def build_data():
              "balanza_comercial_pib": None, "deficit_fiscal_pib": None}
     macro_by_country["Eurozona"] = r
 
+    # Los 4 paises de la Eurozona usan HICP (Eurostat) en vez del IPC nacional de
+    # countryeconomy.com, para que sean comparables entre si y con el agregado
+    # Eurozona (que tambien es HICP). El IPC nacional puede diferir varios puntos
+    # del HICP armonizado (ej. Espana).
+    for pais in feu.EUROZONE_COUNTRY_GEOS:
+        hicp = feu.fetch_hicp_country(pais)
+        if hicp is not None:
+            macro_by_country.setdefault(pais, {})["inflacion"] = hicp
+        else:
+            errors.append(f"HICP {pais}: sin dato, se mantiene el IPC nacional")
+
     # Balanza de pagos: cuenta corriente, cuenta de capital, reservas internacionales (World Bank)
     r, err = safe(fwb.fetch_balance_of_payments)
     bop_by_country = {d["pais"]: d for d in r} if not err else {}
@@ -71,7 +82,7 @@ def build_data():
             "pais": pais,
             "pib_1a": growth.get("pib_1a"),
             "pib_5a": growth.get("pib_5a"),
-            "pib_20a": growth.get("pib_20a"),
+            "pib_anio": growth.get("anio"),
             "inflacion": macro.get("inflacion"),
             "desempleo": macro.get("desempleo"),
             "balanza_comercial_pib": macro.get("balanza_comercial_pib"),
@@ -143,10 +154,17 @@ def main():
         for e in data["errors"]:
             print(" -", e, file=sys.stderr)
 
-    data["bullets"] = rs.generate_bullets(data)
-
     today = data["fecha"]
     data["fecha_larga"] = f"{DIAS_ES[today.weekday()].capitalize()}, {today.day} de {MESES_ES[today.month]} de {today.year}"
+
+    # Bogota is UTC-5 year-round (no DST) -- avoids pulling in a tz database dependency.
+    bogota_now = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=5)
+    data["hora_corte"] = f"{bogota_now.strftime('%H:%M')} COT"
+
+    anios_pib = [d["pib_anio"] for d in data.get("macro_indicadores", []) if d.get("pib_anio")]
+    data["pib_anio_ref"] = max(anios_pib) if anios_pib else "n/d"
+
+    data["bullets"] = rs.generate_bullets(data)
 
     with open("data_dump.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2, default=str)

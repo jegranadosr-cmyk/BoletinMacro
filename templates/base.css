@@ -136,6 +136,7 @@ table.boletin-table td.sub { color: var(--text-muted); font-size: 11.5px; }
 .hero-right { text-align: right; }
 .hero-right .label { font-size: 10px; color: var(--green-bright); letter-spacing: 3px; }
 .hero-right .date { font-size: 16px; font-weight: 700; margin-top: 2px; }
+.hero-right .cutoff { font-size: 10.5px; color: #999; margin-top: 3px; }
 
 .subhead {
   background: var(--gray-bg);
