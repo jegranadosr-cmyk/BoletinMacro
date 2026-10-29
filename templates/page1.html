@@ -23,14 +23,7 @@
   </div>
 
   <div class="content">
-    <div class="section-title">RESUMEN EJECUTIVO</div>
-    <ul class="resumen-list">
-      {% for b in bullets %}
-        <li>{{ b }}</li>
-      {% endfor %}
-    </ul>
-
-    <table class="boletin-table boletin-table-xl">
+    <table class="boletin-table">
       <caption class="caption-lg">Crecimiento económico, inflación y desempleo</caption>
       <thead><tr>
         <th>País</th><th class="num">PIB 1A</th><th class="num">PIB 5A</th><th class="num">PIB 20A</th>
@@ -52,6 +45,49 @@
     <div class="footnote">
       PIB 1A/5A/20A: variación promedio anual del PIB real (CAGR) a 1, 5 y 20 años. Inflación: variación interanual del IPC/HICP.
       Fuentes: Banco Mundial (PIB), countryeconomy.com (inflación y desempleo, Eurostat para Eurozona). Desempleo de China no disponible en la fuente.
+    </div>
+
+    <table class="boletin-table" style="margin-top:22px;">
+      <caption class="caption-lg">Balanza comercial, fiscal y cuenta corriente</caption>
+      <thead><tr>
+        <th>País</th><th class="num">Bal. Comercial</th><th class="num">Déficit Fiscal</th>
+        <th class="num">Cta. Corriente</th><th class="num">Cta. Capital</th><th class="num">Reservas Int.</th>
+      </tr></thead>
+      <tbody>
+      {% for d in macro_indicadores %}
+        <tr>
+          <td class="name">{{ d.pais }}</td>
+          <td class="num">{{ pct_span(d.balanza_comercial_pib) }}</td>
+          <td class="num">{{ pct_span(d.deficit_fiscal_pib) }}</td>
+          <td class="num">{{ pct_span(d.cuenta_corriente_pib) }}</td>
+          <td class="num">{{ fmt_usd_billions(d.cuenta_capital_usd) }}</td>
+          <td class="num">{{ fmt_usd_billions_plain(d.reservas_internacionales_usd) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="footnote">
+      Balanza comercial, déficit fiscal y cuenta corriente: % del PIB. Cuenta de capital y reservas internacionales: miles de millones de dólares (US$B).
+      Fuentes: countryeconomy.com (Eurostat para Eurozona) y Banco Mundial (cuenta corriente, cuenta de capital, reservas). Cuenta de capital de Colombia no disponible en la fuente.
+    </div>
+
+    <table class="boletin-table" style="margin-top:22px;">
+      <caption class="caption-lg">Tasas de política monetaria, deuda pública y bono a 10 años</caption>
+      <thead><tr><th>País</th><th>Tasa de política monetaria</th><th class="num">Deuda/PIB</th><th class="num">Bono 10A</th></tr></thead>
+      <tbody>
+      {% for d in resumen_coyuntural %}
+        <tr>
+          <td class="name">{{ d.pais }}</td>
+          <td>{{ d.tasa_label }}</td>
+          <td class="num">{{ '%.2f'|format(d.deuda_pib) + '%' if d.deuda_pib is not none else '-' }}</td>
+          <td class="num">{{ '%.2f'|format(d.bono_10y) + '%' if d.bono_10y is not none else '-' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="footnote">
+      Tasa de política monetaria: Fed (EE.UU.), BCE (Francia/Alemania/Italia/España), PBOC (China), BOJ (Japón), BanRep (Colombia).
+      Deuda/PIB y bono a 10 años: countryeconomy.com y tradingeconomics.com (bono China).
     </div>
   </div>
 

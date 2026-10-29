@@ -52,7 +52,7 @@ def _fetch_page(start, size=100, timeout=20):
         return json.loads(resp.read())
 
 
-def fetch_relevant_news(max_items=7, pages=3, page_size=100):
+def fetch_relevant_news(max_items=5, pages=3, page_size=100):
     items = []
     for i in range(pages):
         try:

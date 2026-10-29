@@ -12,49 +12,6 @@
     </div>
 
     <table class="boletin-table">
-      <caption class="caption-lg">Balanza comercial, fiscal y cuenta corriente</caption>
-      <thead><tr>
-        <th>País</th><th class="num">Bal. Comercial</th><th class="num">Déficit Fiscal</th>
-        <th class="num">Cta. Corriente</th><th class="num">Cta. Capital</th><th class="num">Reservas Int.</th>
-      </tr></thead>
-      <tbody>
-      {% for d in macro_indicadores %}
-        <tr>
-          <td class="name">{{ d.pais }}</td>
-          <td class="num">{{ pct_span(d.balanza_comercial_pib) }}</td>
-          <td class="num">{{ pct_span(d.deficit_fiscal_pib) }}</td>
-          <td class="num">{{ pct_span(d.cuenta_corriente_pib) }}</td>
-          <td class="num">{{ fmt_usd_billions(d.cuenta_capital_usd) }}</td>
-          <td class="num">{{ fmt_usd_billions_plain(d.reservas_internacionales_usd) }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    <div class="footnote">
-      Balanza comercial, déficit fiscal y cuenta corriente: % del PIB. Cuenta de capital y reservas internacionales: miles de millones de dólares (US$B).
-      Fuentes: countryeconomy.com (Eurostat para Eurozona) y Banco Mundial (cuenta corriente, cuenta de capital, reservas). Cuenta de capital de Colombia no disponible en la fuente.
-    </div>
-
-    <table class="boletin-table" style="margin-top:22px;">
-      <caption class="caption-lg">Tasas de política monetaria, deuda pública y bono a 10 años</caption>
-      <thead><tr><th>País</th><th>Tasa de política monetaria</th><th class="num">Deuda/PIB</th><th class="num">Bono 10A</th></tr></thead>
-      <tbody>
-      {% for d in resumen_coyuntural %}
-        <tr>
-          <td class="name">{{ d.pais }}</td>
-          <td>{{ d.tasa_label }}</td>
-          <td class="num">{{ '%.2f'|format(d.deuda_pib) + '%' if d.deuda_pib is not none else '-' }}</td>
-          <td class="num">{{ '%.2f'|format(d.bono_10y) + '%' if d.bono_10y is not none else '-' }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    <div class="footnote">
-      Tasa de política monetaria: Fed (EE.UU.), BCE (Francia/Alemania/Italia/España), PBOC (China), BOJ (Japón), BanRep (Colombia).
-      Deuda/PIB y bono a 10 años: countryeconomy.com y tradingeconomics.com (bono China).
-    </div>
-
-    <table class="boletin-table" style="margin-top:22px;">
       <caption class="caption-lg">Riesgo país y calificación crediticia</caption>
       <thead><tr><th>País</th><th class="num">Riesgo país (pb)</th><th class="num">Moody's</th><th class="num">S&amp;P</th><th class="num">Fitch</th></tr></thead>
       <tbody>
@@ -71,6 +28,44 @@
     </table>
     <div class="footnote">
       Riesgo país: prima de riesgo en puntos básicos. Calificación crediticia soberana de largo plazo en moneda extranjera. Fuente: countryeconomy.com.
+    </div>
+
+    <table class="boletin-table" style="margin-top:22px;">
+      <caption class="caption-lg">Mercados clave</caption>
+      <thead><tr><th>Indicador</th><th class="num">Nivel</th><th class="num">%Día</th><th class="num">%Mes</th></tr></thead>
+      <tbody>
+      {% for m in mercados_clave %}
+        <tr>
+          <td class="name">{{ m.nombre }}</td>
+          <td class="num">{{ fmt_price(m.price) }}</td>
+          <td class="num">{{ pct_span(m.pct_day) }}</td>
+          <td class="num">{{ pct_span(m.pct_month) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="footnote">
+      Lectura rápida de mercado: fortaleza del dólar (DXY), tipo de cambio EUR/USD y USD/COP, oro (cobertura/refugio) y petróleo WTI (presión inflacionaria vía energía). Fuente: Yahoo Finance.
+    </div>
+
+    <div class="section-title" style="margin-top:22px;">NOTICIAS RELEVANTES DE MACROECONOMÍA Y COYUNTURA</div>
+
+    {% for n in noticias %}
+      <div class="news-item">
+        <div class="news-meta">
+          <span class="news-country">{{ n.pais }}</span>
+          <span class="news-category">{{ n.categoria }}</span>
+          <span class="news-date">{{ n.fecha }}</span>
+        </div>
+        <div class="news-title">{{ n.titulo }}</div>
+        <div class="news-summary">{{ n.resumen }}</div>
+      </div>
+    {% else %}
+      <div class="footnote">No hay noticias relevantes disponibles en este momento.</div>
+    {% endfor %}
+
+    <div class="footnote" style="margin-top:14px;">
+      Fuente: TradingEconomics (stream de noticias económicas). Seleccionadas por relevancia macro para Colombia, EE.UU., Eurozona y sus principales economías, China y Japón.
     </div>
   </div>
 

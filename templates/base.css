@@ -106,11 +106,6 @@ table.boletin-table td.num { text-align: right; font-variant-numeric: tabular-nu
 table.boletin-table td.name { font-weight: 700; }
 table.boletin-table td.sub { color: var(--text-muted); font-size: 11.5px; }
 
-/* larger variant for a single hero table (e.g. page1's headline comparison) */
-table.boletin-table-xl { font-size: 16px; }
-table.boletin-table-xl caption.caption-lg { font-size: 19px; padding: 14px 0; }
-table.boletin-table-xl thead th { font-size: 12px; padding: 14px 10px 11px; }
-table.boletin-table-xl tbody td { padding: 12px 10px; }
 
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
 .dot.up { background: var(--green-text); }
@@ -244,6 +239,10 @@ table.boletin-table-xl tbody td { padding: 12px 10px; }
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--green-bright);
 }
+
+/* larger variant for the closing "En síntesis" page, where the bullets are the main content */
+.resumen-list-lg li { font-size: 15.5px; line-height: 1.65; margin-bottom: 16px; padding-left: 20px; }
+.resumen-list-lg li::before { width: 8px; height: 8px; top: 7px; }
 
 /* equipo responsable */
 .team-member { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
