@@ -106,12 +106,12 @@ def html_to_png(html_str, out_path):
     os.remove(tmp_html)
 
 
-def render_bulletin(data, out_dir):
+def render_bulletin(data, out_dir, pages=("page1.html", "page2.html", "page3.html")):
     os.makedirs(out_dir, exist_ok=True)
-    page1_html = render_html(data, "page1.html")
-    page2_html = render_html(data, "page2.html")
-    p1_path = os.path.join(out_dir, "page1.png")
-    p2_path = os.path.join(out_dir, "page2.png")
-    html_to_png(page1_html, p1_path)
-    html_to_png(page2_html, p2_path)
-    return p1_path, p2_path
+    out_paths = []
+    for i, template_name in enumerate(pages, start=1):
+        html_str = render_html(data, template_name)
+        out_path = os.path.join(out_dir, f"page{i}.png")
+        html_to_png(html_str, out_path)
+        out_paths.append(out_path)
+    return out_paths

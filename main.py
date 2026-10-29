@@ -8,6 +8,7 @@ import fetch_countryeconomy as fce
 import fetch_eurostat as feu
 import fetch_rates as fr
 import fetch_debt_bonds as fdb
+import fetch_news as fn
 import resumen as rs
 import render as rd
 import send_telegram as st
@@ -77,6 +78,12 @@ def build_data():
         })
     data["resumen_coyuntural"] = resumen_coyuntural
 
+    # Noticias relevantes de macroeconomia y coyuntura (TradingEconomics)
+    r, err = safe(fn.fetch_relevant_news)
+    data["noticias"] = r if not err else []
+    if err:
+        errors.append(f"Noticias: {err}")
+
     data["errors"] = errors
     return data
 
@@ -104,8 +111,8 @@ def main():
 def run(send=True):
     data = main()
 
-    p1, p2 = rd.render_bulletin(data, "render_out")
-    print(f"Rendered: {p1}, {p2}")
+    pages = rd.render_bulletin(data, "render_out")
+    print(f"Rendered: {', '.join(pages)}")
 
     if send:
         token = os.environ.get("TELEGRAM_BOT_TOKEN")
@@ -113,7 +120,7 @@ def run(send=True):
         if not token or not chat_id:
             print("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set, skipping send.", file=sys.stderr)
             return data
-        result = st.send_media_group(token, chat_id, [p1, p2])
+        result = st.send_media_group(token, chat_id, pages)
         print(json.dumps(result, indent=2))
         if not result.get("ok"):
             raise RuntimeError(f"Telegram send failed: {result}")

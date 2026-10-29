@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="{{ templates }}/base.css">
+</head>
+<body>
+<div class="page">
+  <div class="content">
+    <div class="page2-logo">
+      <img class="mark" src="{{ assets }}/unv_logo.png">
+    </div>
+
+    <div class="section-title">NOTICIAS RELEVANTES DE MACROECONOMÍA Y COYUNTURA</div>
+
+    {% for n in noticias %}
+      <div class="news-item">
+        <div class="news-meta">
+          <span class="news-country">{{ n.pais }}</span>
+          <span class="news-category">{{ n.categoria }}</span>
+          <span class="news-date">{{ n.fecha }}</span>
+        </div>
+        <div class="news-title">{{ n.titulo }}</div>
+        <div class="news-summary">{{ n.resumen }}</div>
+      </div>
+    {% else %}
+      <div class="footnote">No hay noticias relevantes disponibles en este momento.</div>
+    {% endfor %}
+
+    <div class="footnote" style="margin-top:14px;">
+      Fuente: TradingEconomics (stream de noticias económicas). Seleccionadas por relevancia macro para Colombia, EE.UU., Eurozona, China y Japón.
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>Boletín Unvesting &bull; Área de Investigación e Innovación &bull; Información macroeconómica &bull; No constituye asesoría financiera</div>
+    <div class="page-num">Página 3</div>
+  </div>
+</div>
+</body>
+</html>
