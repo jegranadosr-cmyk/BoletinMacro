@@ -9,6 +9,7 @@ import fetch_eurostat as feu
 import fetch_rates as fr
 import fetch_debt_bonds as fdb
 import fetch_market as fmkt
+import fetch_worldbank as fwb
 import fetch_news as fnews
 import resumen as rs
 import render as rd
@@ -45,6 +46,18 @@ def build_data():
              "desempleo": None, "balanza_comercial_pib": None, "deficit_fiscal_pib": None}
     # Insert Eurozona after Colombia and EE.UU., before China/Japon
     macro_indicadores = macro_indicadores[:2] + [r] + macro_indicadores[2:]
+
+    # Balanza de pagos: cuenta corriente, cuenta de capital, reservas internacionales (World Bank)
+    r, err = safe(fwb.fetch_balance_of_payments)
+    bop_by_country = {d["pais"]: d for d in r} if not err else {}
+    if err:
+        errors.append(f"WorldBank: {err}")
+    for d in macro_indicadores:
+        bop = bop_by_country.get(d["pais"], {})
+        d["cuenta_corriente_pib"] = bop.get("cuenta_corriente_pib")
+        d["cuenta_capital_usd"] = bop.get("cuenta_capital_usd")
+        d["reservas_internacionales_usd"] = bop.get("reservas_internacionales_usd")
+
     data["macro_indicadores"] = macro_indicadores
 
     # Tasas de politica monetaria (bancos centrales)

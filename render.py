@@ -50,6 +50,19 @@ def arrow(v):
     return "▲" if v >= 0 else "▼"
 
 
+def fmt_usd_billions(v):
+    if v is None:
+        return "-"
+    sign = "+" if v >= 0 else "-"
+    return f"{sign}${abs(v) / 1e9:,.1f}B"
+
+
+def fmt_usd_billions_plain(v):
+    if v is None:
+        return "-"
+    return f"${v / 1e9:,.1f}B"
+
+
 def bar_height(v, all_items):
     vals = [abs(i["pct_day"]) for i in all_items if i["pct_day"] is not None]
     max_val = max(vals) if vals else 1
@@ -65,6 +78,8 @@ def _env():
     env.globals.update(
         fmt_price=fmt_price,
         fmt_big=fmt_big,
+        fmt_usd_billions=fmt_usd_billions,
+        fmt_usd_billions_plain=fmt_usd_billions_plain,
         pct_plain=pct_plain,
         pct_span=lambda v: _markup(pct_span(v)),
         pct_span_compact=lambda v: _markup(pct_span_compact(v)),

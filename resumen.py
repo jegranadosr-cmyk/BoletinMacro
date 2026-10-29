@@ -65,6 +65,20 @@ def generate_bullets(data):
         peor_deficit = min(deficit_validos, key=lambda d: d["deficit_fiscal_pib"])
         bullets.append(f"{peor_deficit['pais']} tiene el mayor déficit fiscal del grupo, {fmt_pct(peor_deficit['deficit_fiscal_pib'])} del PIB.")
 
+    cta_corriente_validos = [d for d in data.get("macro_indicadores", []) if d.get("cuenta_corriente_pib") is not None]
+    if cta_corriente_validos:
+        top_superavit_cc = max(cta_corriente_validos, key=lambda d: d["cuenta_corriente_pib"])
+        if top_superavit_cc["cuenta_corriente_pib"] > 0:
+            bullets.append(f"{top_superavit_cc['pais']} tiene el mayor superávit en cuenta corriente, {fmt_pct(top_superavit_cc['cuenta_corriente_pib'])} del PIB.")
+        peor_cc = min(cta_corriente_validos, key=lambda d: d["cuenta_corriente_pib"])
+        if peor_cc["cuenta_corriente_pib"] < 0:
+            bullets.append(f"{peor_cc['pais']} presenta el mayor déficit en cuenta corriente, {fmt_pct(peor_cc['cuenta_corriente_pib'])} del PIB.")
+
+    reservas_validas = [d for d in data.get("macro_indicadores", []) if d.get("reservas_internacionales_usd") is not None]
+    if reservas_validas:
+        top_reservas = max(reservas_validas, key=lambda d: d["reservas_internacionales_usd"])
+        bullets.append(f"{top_reservas['pais']} tiene las mayores reservas internacionales del grupo, US${top_reservas['reservas_internacionales_usd']/1e9:,.0f}B.")
+
     dxy = next((m for m in data.get("mercados_clave", []) if m["nombre"].startswith("DXY")), None)
     if dxy and dxy["pct_month"] is not None:
         verbo = "se fortalece" if dxy["pct_month"] >= 0 else "se debilita"
