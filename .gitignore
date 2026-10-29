@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+render_out/
+data_dump.json
+*.tmp.html
+.env

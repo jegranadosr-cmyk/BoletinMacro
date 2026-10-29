@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="{{ templates }}/base.css">
+</head>
+<body>
+<div class="page">
+  <div class="hero-header">
+    <div class="hero-left">
+      <div class="logo-block">
+        <div class="logo-row"><img class="mark" src="{{ assets }}/unv_logo_white.png"></div>
+      </div>
+      <div class="hero-title">
+        <h1>Lupa a la <span class="accent">macroeconomía</span></h1>
+        <div class="sub">Unvesting Group S.A.S.</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="label">F E C H A</div>
+      <div class="date">{{ fecha_larga }}</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="section-title">RESUMEN EJECUTIVO</div>
+    <ul class="resumen-list">
+      {% for b in bullets %}
+        <li>{{ b }}</li>
+      {% endfor %}
+    </ul>
+
+    <div class="section-title">PIB, INFLACIÓN, DESEMPLEO Y BALANZA COMERCIAL</div>
+    <div class="macro-grid">
+      {% for d in macro_indicadores %}
+        <div class="macro-card">
+          <div class="region">{{ d.pais }}</div>
+          <div class="macro-stat">
+            <span class="label">PIB (A/A)</span>
+            <span class="value {{ 'up' if (d.pib_crecimiento or 0) >= 0 else 'down' }}">{{ pct_plain(d.pib_crecimiento) }}</span>
+          </div>
+          <div class="macro-stat">
+            <span class="label">INFLACIÓN</span>
+            <span class="value">{{ pct_plain(d.inflacion) }}</span>
+          </div>
+          <div class="macro-stat">
+            <span class="label">DESEMPLEO</span>
+            <span class="value">{{ pct_plain(d.desempleo) }}</span>
+          </div>
+          <div class="macro-stat">
+            <span class="label">BAL. COM. (%PIB)</span>
+            <span class="value {{ 'up' if (d.balanza_comercial_pib or 0) >= 0 else 'down' }}">{{ pct_plain(d.balanza_comercial_pib) }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="footnote">
+      PIB: variación interanual del PIB real. Inflación: variación interanual del IPC/HICP. Balanza comercial: saldo comercial de bienes como % del PIB.
+      Fuentes: countryeconomy.com (Colombia, EE.UU., China, Japón) y Eurostat (Eurozona). Desempleo de China no disponible en la fuente.
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>Boletín Unvesting &bull; Área de Investigación e Innovación &bull; Información macroeconómica &bull; No constituye asesoría financiera</div>
+    <div class="page-num">Página 1</div>
+  </div>
+</div>
+</body>
+</html>
