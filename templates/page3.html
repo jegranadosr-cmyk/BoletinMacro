@@ -11,7 +11,25 @@
       <img class="mark" src="{{ assets }}/unv_logo.png">
     </div>
 
-    <div class="section-title">NOTICIAS RELEVANTES DE MACROECONOMÍA Y COYUNTURA</div>
+    <table class="boletin-table">
+      <caption class="caption-lg">Mercados clave</caption>
+      <thead><tr><th>Indicador</th><th class="num">Nivel</th><th class="num">%Día</th><th class="num">%Mes</th></tr></thead>
+      <tbody>
+      {% for m in mercados_clave %}
+        <tr>
+          <td class="name">{{ m.nombre }}</td>
+          <td class="num">{{ fmt_price(m.price) }}</td>
+          <td class="num">{{ pct_span(m.pct_day) }}</td>
+          <td class="num">{{ pct_span(m.pct_month) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="footnote">
+      Lectura rápida de mercado: fortaleza del dólar (DXY), tipo de cambio EUR/USD y USD/COP, oro (cobertura/refugio) y petróleo WTI (presión inflacionaria vía energía). Fuente: Yahoo Finance.
+    </div>
+
+    <div class="section-title" style="margin-top:22px;">NOTICIAS RELEVANTES DE MACROECONOMÍA Y COYUNTURA</div>
 
     {% for n in noticias %}
       <div class="news-item">
@@ -28,7 +46,7 @@
     {% endfor %}
 
     <div class="footnote" style="margin-top:14px;">
-      Fuente: TradingEconomics (stream de noticias económicas). Seleccionadas por relevancia macro para Colombia, EE.UU., Eurozona, China y Japón.
+      Fuente: TradingEconomics (stream de noticias económicas). Seleccionadas por relevancia macro para Colombia, EE.UU., Eurozona y sus principales economías, China y Japón.
     </div>
 
     <div class="section-title" style="font-size:15px; color:#1fa75c; margin-top:24px;">EQUIPO RESPONSABLE</div>

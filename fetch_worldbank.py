@@ -11,7 +11,7 @@ Verified live (Oct 2026):
   account". Not reported for Colombia.
 - International reserves, current US$: FI.RES.TOTL.CD.
 
-Country codes: COL, USA, CHN, JPN, EMU (euro area aggregate).
+Country codes: COL, USA, EMU (euro area aggregate), FRA, DEU, ITA, ESP, CHN, JPN.
 
 CDS (credit default swaps) were investigated but no free, statically
 scrapable source was found: worldgovernmentbonds.com's sovereign-cds pages
@@ -24,6 +24,7 @@ countryeconomy.com and tradingeconomics.com don't carry CDS at all. The
 the closest available proxy for sovereign credit risk.
 """
 import socket
+import time
 import urllib.request
 import json
 
@@ -43,16 +44,29 @@ PAISES = [
     ("Colombia", "COL"),
     ("EE.UU.", "USA"),
     ("Eurozona", "EMU"),
+    ("Francia", "FRA"),
+    ("Alemania", "DEU"),
+    ("Italia", "ITA"),
+    ("España", "ESP"),
     ("China", "CHN"),
     ("Japón", "JPN"),
 ]
 
 
-def _latest(country, indicator, timeout=20):
+def _latest(country, indicator, timeout=25, retries=3):
     url = BASE.format(country=country, indicator=indicator)
-    req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read())
+    last_err = None
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, headers=HEADERS)
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = json.loads(resp.read())
+            break
+        except Exception as e:
+            last_err = e
+            time.sleep(1.5 * (attempt + 1))
+    else:
+        raise last_err
     if len(data) < 2 or not data[1]:
         return None
     for row in data[1]:

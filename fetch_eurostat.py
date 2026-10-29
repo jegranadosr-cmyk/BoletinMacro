@@ -2,9 +2,10 @@
 (no key required). countryeconomy.com doesn't track the Eurozone as a block,
 so this is a separate source from fetch_countryeconomy.py.
 
+GDP growth itself comes from fetch_growth.py (World Bank CAGR, consistent
+across 1/5/20-year horizons and across every region this bulletin covers).
+
 Verified live (Oct 2026):
-- GDP growth YoY: namq_10_gdp, na_item=B1GQ, unit=CLV_PCH_SM (seasonally
-  adjusted real GDP, % change on same quarter of previous year).
 - Inflation YoY: prc_hicp_manr, coicop=CP00 (HICP all-items, annual rate).
 - Unemployment: une_rt_m, seasonally adjusted, total, both sexes.
 - Trade balance: not reliably available under a short Eurostat code within
@@ -63,11 +64,6 @@ def _try_geos(dataset, params):
     return None, None
 
 
-def fetch_gdp_growth():
-    val, fecha = _try_geos("namq_10_gdp", "s_adj=SCA&na_item=B1GQ&unit=CLV_PCH_SM")
-    return val, fecha
-
-
 def fetch_cpi_yoy():
     val, fecha = _try_geos("prc_hicp_manr", "coicop=CP00")
     return val, fecha
@@ -84,13 +80,11 @@ def fetch_deficit_pct_gdp():
 
 
 def fetch_macro_indicators():
-    pib, _ = fetch_gdp_growth()
     ipc, _ = fetch_cpi_yoy()
     desempleo, _ = fetch_unemployment()
     deficit, _ = fetch_deficit_pct_gdp()
     return {
         "pais": "Eurozona",
-        "pib_crecimiento": pib,
         "inflacion": ipc,
         "desempleo": desempleo,
         "balanza_comercial_pib": None,

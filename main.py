@@ -6,6 +6,7 @@ import traceback
 
 import fetch_countryeconomy as fce
 import fetch_eurostat as feu
+import fetch_growth as fg
 import fetch_rates as fr
 import fetch_debt_bonds as fdb
 import fetch_market as fmkt
@@ -18,6 +19,9 @@ import send_telegram as st
 MESES_ES = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
             "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 DIAS_ES = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+
+# Canonical region order used across every "9-region" table in the bulletin.
+REGIONES = ["Colombia", "EE.UU.", "Eurozona", "Francia", "Alemania", "Italia", "España", "China", "Japón"]
 
 
 def safe(fn, *args, **kwargs):
@@ -32,32 +36,50 @@ def build_data():
     errors = []
     data = {"fecha": today}
 
-    # PIB / inflacion / desempleo / balanza comercial: Colombia, EE.UU., China, Japon
+    # Crecimiento del PIB a 1/5/20 anos (CAGR, Banco Mundial) para las 9 regiones
+    r, err = safe(fg.fetch_growth_horizons)
+    growth_by_country = {d["pais"]: d for d in r} if not err else {}
+    if err:
+        errors.append(f"Growth: {err}")
+
+    # Inflacion / desempleo / balanza comercial / deficit fiscal: 8 paises (sin Eurozona)
     r, err = safe(fce.fetch_macro_indicators)
-    macro_indicadores = r if not err else []
+    macro_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"CountryEconomyMacro: {err}")
 
-    # Eurozona (agregado, via Eurostat)
+    # Eurozona (agregado, via Eurostat): inflacion / desempleo / deficit fiscal
     r, err = safe(feu.fetch_macro_indicators)
     if err:
         errors.append(f"EurostatMacro: {err}")
-        r = {"pais": "Eurozona", "pib_crecimiento": None, "inflacion": None,
-             "desempleo": None, "balanza_comercial_pib": None, "deficit_fiscal_pib": None}
-    # Insert Eurozona after Colombia and EE.UU., before China/Japon
-    macro_indicadores = macro_indicadores[:2] + [r] + macro_indicadores[2:]
+        r = {"pais": "Eurozona", "inflacion": None, "desempleo": None,
+             "balanza_comercial_pib": None, "deficit_fiscal_pib": None}
+    macro_by_country["Eurozona"] = r
 
     # Balanza de pagos: cuenta corriente, cuenta de capital, reservas internacionales (World Bank)
     r, err = safe(fwb.fetch_balance_of_payments)
     bop_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"WorldBank: {err}")
-    for d in macro_indicadores:
-        bop = bop_by_country.get(d["pais"], {})
-        d["cuenta_corriente_pib"] = bop.get("cuenta_corriente_pib")
-        d["cuenta_capital_usd"] = bop.get("cuenta_capital_usd")
-        d["reservas_internacionales_usd"] = bop.get("reservas_internacionales_usd")
 
+    macro_indicadores = []
+    for pais in REGIONES:
+        growth = growth_by_country.get(pais, {})
+        macro = macro_by_country.get(pais, {})
+        bop = bop_by_country.get(pais, {})
+        macro_indicadores.append({
+            "pais": pais,
+            "pib_1a": growth.get("pib_1a"),
+            "pib_5a": growth.get("pib_5a"),
+            "pib_20a": growth.get("pib_20a"),
+            "inflacion": macro.get("inflacion"),
+            "desempleo": macro.get("desempleo"),
+            "balanza_comercial_pib": macro.get("balanza_comercial_pib"),
+            "deficit_fiscal_pib": macro.get("deficit_fiscal_pib"),
+            "cuenta_corriente_pib": bop.get("cuenta_corriente_pib"),
+            "cuenta_capital_usd": bop.get("cuenta_capital_usd"),
+            "reservas_internacionales_usd": bop.get("reservas_internacionales_usd"),
+        })
     data["macro_indicadores"] = macro_indicadores
 
     # Tasas de politica monetaria (bancos centrales)
@@ -66,18 +88,19 @@ def build_data():
     if err:
         errors.append(f"TasasBC: {err}")
 
-    # Deuda/PIB y bono a 10 anos: Francia, EE.UU., China, Japon, Colombia
+    # Deuda/PIB, bono a 10 anos, riesgo pais y rating: Francia, Alemania, Italia,
+    # Espana, EE.UU., China, Japon, Colombia (8 paises, sin Eurozona -- no es un emisor soberano)
     r, err = safe(fdb.fetch_debt_and_bonds)
     data["deuda_bonos"] = r if not err else []
     if err:
         errors.append(f"DeudaBonos: {err}")
 
     # Resumen coyuntural: una fila por pais con tasa de politica monetaria,
-    # deuda/PIB y bono a 10 anos. Francia usa la tasa del BCE (Eurozona).
+    # deuda/PIB y bono a 10 anos. Los 4 paises de la Eurozona usan la tasa del BCE.
     rate_by_country = {t["pais"]: t for t in data["tasas_bancos_centrales"]}
     RATE_LOOKUP = {
-        "Francia": "Eurozona", "EE.UU.": "EE.UU.", "China": "China",
-        "Japón": "Japón", "Colombia": "Colombia",
+        "Francia": "Eurozona", "Alemania": "Eurozona", "Italia": "Eurozona", "España": "Eurozona",
+        "EE.UU.": "EE.UU.", "China": "China", "Japón": "Japón", "Colombia": "Colombia",
     }
     resumen_coyuntural = []
     for d in data["deuda_bonos"]:

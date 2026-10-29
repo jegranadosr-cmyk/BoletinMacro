@@ -11,14 +11,20 @@ def fmt_pct(v, decimals=2):
 def generate_bullets(data):
     bullets = []
 
-    pib_validos = [d for d in data.get("macro_indicadores", []) if d["pib_crecimiento"] is not None]
+    pib_validos = [d for d in data.get("macro_indicadores", []) if d["pib_1a"] is not None]
     if pib_validos:
-        top_pib = max(pib_validos, key=lambda d: d["pib_crecimiento"])
-        bullets.append(f"{top_pib['pais']} lidera el crecimiento del PIB del grupo, {fmt_pct(top_pib['pib_crecimiento'])} interanual.")
-        contraccion = [d for d in pib_validos if d["pib_crecimiento"] < 0]
+        top_pib = max(pib_validos, key=lambda d: d["pib_1a"])
+        bullets.append(f"{top_pib['pais']} lidera el crecimiento del PIB del grupo, {fmt_pct(top_pib['pib_1a'])} interanual.")
+        contraccion = [d for d in pib_validos if d["pib_1a"] < 0]
         if contraccion:
-            peor_pib = min(contraccion, key=lambda d: d["pib_crecimiento"])
-            bullets.append(f"{peor_pib['pais']} es la única economía del grupo en contracción, {fmt_pct(peor_pib['pib_crecimiento'])} interanual.")
+            peor_pib = min(contraccion, key=lambda d: d["pib_1a"])
+            bullets.append(f"{peor_pib['pais']} es la única economía del grupo en contracción, {fmt_pct(peor_pib['pib_1a'])} interanual.")
+
+    pib_20a_validos = [d for d in data.get("macro_indicadores", []) if d["pib_20a"] is not None]
+    if pib_20a_validos:
+        top_20a = max(pib_20a_validos, key=lambda d: d["pib_20a"])
+        peor_20a = min(pib_20a_validos, key=lambda d: d["pib_20a"])
+        bullets.append(f"En dos décadas, {top_20a['pais']} ha crecido más rápido que el resto del grupo ({fmt_pct(top_20a['pib_20a'])} anual promedio), mientras {peor_20a['pais']} es el más lento ({fmt_pct(peor_20a['pib_20a'])}).")
 
     validos = [d for d in data.get("macro_indicadores", []) if d["inflacion"] is not None]
     if validos:

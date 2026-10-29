@@ -1,17 +1,19 @@
-"""Fetch core macro indicators (GDP growth, CPI inflation, unemployment, trade
-balance) for USA, Colombia, China and Japan from countryeconomy.com overview
-tables. Eurozone is not tracked on these aggregator pages -- see
-fetch_eurostat.py for that one.
+"""Fetch core macro indicators (CPI inflation, unemployment, trade balance,
+fiscal deficit) from countryeconomy.com overview tables, for every country
+this bulletin covers except the Euro area aggregate (not tracked on these
+pages -- see fetch_eurostat.py for that one). GDP growth itself comes from
+fetch_growth.py (World Bank CAGR, consistent across 1/5/20-year horizons and
+across the Euro area aggregate too).
 
 Verified against the live tables (Oct 2026):
-- GDP growth: countryeconomy.com/gdp -- plain "numero" cell after the eur/dol
-  annual GDP pair is the YoY growth rate.
 - CPI: countryeconomy.com/cpi -- first "numero" cell is interannual CPI.
 - Unemployment: countryeconomy.com/unemployment -- first "numero" cell is the
   unemployment rate.
 - Trade balance: countryeconomy.com/trade/balance -- second plain "numero"
   cell (after the eur/dol export/import/balance triplets and the coverage
   rate) is "Trade balance % GDP".
+- Fiscal deficit: countryeconomy.com/deficit -- plain "numero" cell after the
+  eur/dol deficit pair is "Deficit % GDP".
 """
 import re
 import socket
@@ -28,7 +30,6 @@ socket.getaddrinfo = _ipv4_only_getaddrinfo
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
-GDP_URL = "https://countryeconomy.com/gdp"
 CPI_URL = "https://countryeconomy.com/cpi"
 UNEMPLOYMENT_URL = "https://countryeconomy.com/unemployment"
 TRADE_BALANCE_URL = "https://countryeconomy.com/trade/balance"
@@ -37,6 +38,10 @@ DEFICIT_URL = "https://countryeconomy.com/deficit"
 PAISES = [
     ("Colombia", "colombia"),
     ("EE.UU.", "usa"),
+    ("Francia", "france"),
+    ("Alemania", "germany"),
+    ("Italia", "italy"),
+    ("España", "spain"),
     ("China", "china"),
     ("Japón", "japan"),
 ]
@@ -69,16 +74,6 @@ def _numeros(row_html):
 
 def _plain_numeros(row_html):
     return [val for cls, val in _numeros(row_html) if cls == ""]
-
-
-def fetch_gdp_growth():
-    html = _fetch_text(GDP_URL)
-    out = {}
-    for _, slug in PAISES:
-        row = _row_html(html, "/gdp/", slug)
-        plain = _plain_numeros(row) if row else []
-        out[slug] = plain[0] if plain else None
-    return out
 
 
 def fetch_cpi_yoy():
@@ -123,7 +118,6 @@ def fetch_deficit_pct_gdp():
 
 
 def fetch_macro_indicators():
-    gdp = fetch_gdp_growth()
     cpi = fetch_cpi_yoy()
     unemployment = fetch_unemployment()
     trade = fetch_trade_balance_pct_gdp()
@@ -132,7 +126,6 @@ def fetch_macro_indicators():
     for nombre, slug in PAISES:
         out.append({
             "pais": nombre,
-            "pib_crecimiento": gdp.get(slug),
             "inflacion": cpi.get(slug),
             "desempleo": unemployment.get(slug),
             "balanza_comercial_pib": trade.get(slug),

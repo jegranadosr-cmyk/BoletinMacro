@@ -1,9 +1,10 @@
-"""Fetch government debt-to-GDP and 10-year bond yields for France, USA, China,
-Japan and Colombia. Sources verified against independent reporting (Oct 2026):
-- Debt/GDP: countryeconomy.com national-debt overview table (all 5 countries).
-- 10Y yield: countryeconomy.com bonds overview table (USA/France/Japan) and its
-  individual country page (Colombia); China isn't tracked there, so it's sourced
-  from tradingeconomics.com's live quote span instead.
+"""Fetch government debt-to-GDP, 10-year bond yields, risk premium and
+sovereign credit ratings for France, Germany, Italy, Spain, USA, China, Japan
+and Colombia. Sources verified against independent reporting (Oct 2026):
+- Debt/GDP: countryeconomy.com national-debt overview table (all 8 countries).
+- 10Y yield: countryeconomy.com bonds overview table (all except Colombia and
+  China); Colombia has its own page, China isn't tracked there at all so it's
+  sourced from tradingeconomics.com's live quote span instead.
 """
 import re
 import socket
@@ -29,6 +30,9 @@ RATINGS_URL = "https://countryeconomy.com/ratings"
 
 PAISES = [
     ("Francia", "france"),
+    ("Alemania", "germany"),
+    ("Italia", "italy"),
+    ("España", "spain"),
     ("EE.UU.", "usa"),
     ("China", "china"),
     ("Japón", "japan"),

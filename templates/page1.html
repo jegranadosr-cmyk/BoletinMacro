@@ -30,51 +30,28 @@
       {% endfor %}
     </ul>
 
-    <div class="section-title">PIB, INFLACIÓN, DESEMPLEO, BALANZA COMERCIAL Y DÉFICIT FISCAL</div>
-    <div class="macro-grid">
+    <table class="boletin-table boletin-table-xl">
+      <caption class="caption-lg">Crecimiento económico, inflación y desempleo</caption>
+      <thead><tr>
+        <th>País</th><th class="num">PIB 1A</th><th class="num">PIB 5A</th><th class="num">PIB 20A</th>
+        <th class="num">Inflación</th><th class="num">Desempleo</th>
+      </tr></thead>
+      <tbody>
       {% for d in macro_indicadores %}
-        <div class="macro-card">
-          <div class="region">{{ d.pais }}</div>
-          <div class="macro-stat">
-            <span class="label">PIB (A/A)</span>
-            <span class="value {{ 'up' if (d.pib_crecimiento or 0) >= 0 else 'down' }}">{{ pct_plain(d.pib_crecimiento) }}</span>
-          </div>
-          <div class="macro-stat">
-            <span class="label">INFLACIÓN</span>
-            <span class="value">{{ pct_plain(d.inflacion) }}</span>
-          </div>
-          <div class="macro-stat">
-            <span class="label">DESEMPLEO</span>
-            <span class="value">{{ pct_plain(d.desempleo) }}</span>
-          </div>
-          <div class="macro-stat">
-            <span class="label">BAL. COM. (%PIB)</span>
-            <span class="value {{ 'up' if (d.balanza_comercial_pib or 0) >= 0 else 'down' }}">{{ pct_plain(d.balanza_comercial_pib) }}</span>
-          </div>
-          <div class="macro-stat">
-            <span class="label">DÉFICIT (%PIB)</span>
-            <span class="value {{ 'up' if (d.deficit_fiscal_pib or 0) >= 0 else 'down' }}">{{ pct_plain(d.deficit_fiscal_pib) }}</span>
-          </div>
-          <div class="macro-stat">
-            <span class="label">CTA. CORRIENTE (%PIB)</span>
-            <span class="value {{ 'up' if (d.cuenta_corriente_pib or 0) >= 0 else 'down' }}">{{ pct_plain(d.cuenta_corriente_pib) }}</span>
-          </div>
-          <div class="macro-stat">
-            <span class="label">CTA. CAPITAL (US$)</span>
-            <span class="value {{ 'up' if (d.cuenta_capital_usd or 0) >= 0 else 'down' }}">{{ fmt_usd_billions(d.cuenta_capital_usd) }}</span>
-          </div>
-          <div class="macro-stat">
-            <span class="label">RESERVAS INTER. (US$)</span>
-            <span class="value">{{ fmt_usd_billions_plain(d.reservas_internacionales_usd) }}</span>
-          </div>
-        </div>
+        <tr>
+          <td class="name">{{ d.pais }}</td>
+          <td class="num">{{ pct_span(d.pib_1a) }}</td>
+          <td class="num">{{ pct_span(d.pib_5a) }}</td>
+          <td class="num">{{ pct_span(d.pib_20a) }}</td>
+          <td class="num">{{ pct_plain(d.inflacion) }}</td>
+          <td class="num">{{ pct_plain(d.desempleo) }}</td>
+        </tr>
       {% endfor %}
-    </div>
-
+      </tbody>
+    </table>
     <div class="footnote">
-      PIB: variación interanual del PIB real. Inflación: variación interanual del IPC/HICP. Balanza comercial, déficit fiscal y cuenta corriente: % del PIB.
-      Cuenta de capital y reservas internacionales: miles de millones de dólares (US$B).
-      Fuentes: countryeconomy.com (Colombia, EE.UU., China, Japón), Eurostat (Eurozona) y Banco Mundial (balanza de pagos y reservas). Desempleo de China y cuenta de capital de Colombia no disponibles en la fuente.
+      PIB 1A/5A/20A: variación promedio anual del PIB real (CAGR) a 1, 5 y 20 años. Inflación: variación interanual del IPC/HICP.
+      Fuentes: Banco Mundial (PIB), countryeconomy.com (inflación y desempleo, Eurostat para Eurozona). Desempleo de China no disponible en la fuente.
     </div>
   </div>
 
