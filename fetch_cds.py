@@ -15,6 +15,7 @@ different things and can differ a lot (e.g. Colombia: ~960bp bond spread
 vs ~150bp CDS, because the bond spread also reflects currency and expected-
 inflation differentials that a CDS, quoted in USD, does not).
 """
+import time
 from playwright.sync_api import sync_playwright
 
 PAISES = [
@@ -36,19 +37,32 @@ URL = "https://www.worldgovernmentbonds.com/cds-historical-data/{slug}/5-years/"
 SELECTOR = '[data-async-variable="jsGlobalResult|result.ultimoValore"]'
 
 
+def _fetch_one(browser, slug, retries=2):
+    for attempt in range(retries):
+        page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+        try:
+            resp = page.goto(URL.format(slug=slug), timeout=20000)
+            if resp is None or resp.status >= 500:
+                raise RuntimeError(f"HTTP {resp.status if resp else '?'}")
+            page.wait_for_timeout(2500)
+            text = page.evaluate(f"document.querySelector('{SELECTOR}')?.textContent")
+            if text and text.strip() not in ("", "----"):
+                return float(text)
+            return None
+        except Exception:
+            if attempt == retries - 1:
+                return None
+            time.sleep(4)
+        finally:
+            page.close()
+    return None
+
+
 def fetch_cds_5y():
     out = {}
     with sync_playwright() as p:
         browser = p.chromium.launch()
         for nombre, slug in PAISES:
-            page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-            try:
-                page.goto(URL.format(slug=slug), timeout=20000)
-                page.wait_for_timeout(2500)
-                text = page.evaluate(f"document.querySelector('{SELECTOR}')?.textContent")
-                out[nombre] = float(text) if text and text.strip() not in ("", "----") else None
-            except Exception:
-                out[nombre] = None
-            page.close()
+            out[nombre] = _fetch_one(browser, slug)
         browser.close()
     return out
