@@ -2,8 +2,11 @@ name: Boletin Macro Unvesting diario
 
 on:
   schedule:
-    # 7:00 am America/Bogota (UTC-5) = 12:00 UTC, every day
-    - cron: "0 12 * * *"
+    # ~7:00 am America/Bogota (UTC-5) = ~12:00 UTC, every day. Minute offset
+    # (7, not 0) is deliberate -- GitHub's own docs warn that top-of-the-hour
+    # cron triggers queue behind a huge global spike and can be delayed by
+    # hours or skipped outright; a non-zero minute avoids most of that queue.
+    - cron: "7 12 * * *"
   workflow_dispatch: {}
 
 jobs:
