@@ -69,11 +69,9 @@ def fetch_cpi_yoy():
     return val, fecha
 
 
-# ISO2 geo codes for the Eurozone member(s) this bulletin breaks out
-# individually (just Germany since the 2026-10-30 country swap -- France,
-# the other former member, was replaced by Iraq).
+# ISO2 geo codes for the Eurozone members this bulletin breaks out individually.
 EUROZONE_COUNTRY_GEOS = {
-    "Alemania": "DE",
+    "Francia": "FR", "Alemania": "DE", "Italia": "IT", "España": "ES",
 }
 
 

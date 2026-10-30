@@ -11,7 +11,7 @@ Verified live (Oct 2026):
   account". Not reported for Colombia.
 - International reserves, current US$: FI.RES.TOTL.CD.
 
-Country codes: COL, USA, DEU, IND, KOR, CHN, JPN.
+Country codes: COL, USA, GBR, FRA, DEU, ITA, ESP, IND, KOR, CHN, JPN, VNM.
 
 CDS (credit default swaps) were investigated but no free, statically
 scrapable source was found: worldgovernmentbonds.com's sovereign-cds pages
@@ -43,11 +43,16 @@ BASE = "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}?for
 PAISES = [
     ("Colombia", "COL"),
     ("EE.UU.", "USA"),
+    ("Reino Unido", "GBR"),
+    ("Francia", "FRA"),
     ("Alemania", "DEU"),
+    ("Italia", "ITA"),
+    ("España", "ESP"),
     ("India", "IND"),
     ("Corea del Sur", "KOR"),
     ("China", "CHN"),
     ("Japón", "JPN"),
+    ("Vietnam", "VNM"),
 ]
 
 

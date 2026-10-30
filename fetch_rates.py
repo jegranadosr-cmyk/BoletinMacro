@@ -11,6 +11,7 @@ Each source was cross-checked against independent news reporting (Oct 2026):
   2024 value), so Japan is sourced from global-rates.com instead, which matched
   independent news reporting.
 - PBOC / BanRep: countryeconomy.com verified correct against independent sources.
+- BOE / SBV: countryeconomy.com/key-rates, same pattern as PBOC/BanRep/RBI/BOK.
 """
 import re
 import socket
@@ -156,9 +157,17 @@ def fetch_south_korea():
     return _simple_rate("Corea del Sur", "south-korea", "BOK")
 
 
+def fetch_uk():
+    return _simple_rate("Reino Unido", "uk", "BOE")
+
+
+def fetch_vietnam():
+    return _simple_rate("Vietnam", "vietnam", "SBV")
+
+
 def fetch_policy_rates():
     fetchers = [fetch_ecb, fetch_fed, fetch_china, fetch_boj, fetch_colombia,
-                fetch_india, fetch_south_korea]
+                fetch_india, fetch_south_korea, fetch_uk, fetch_vietnam]
     out = []
     for fn in fetchers:
         try:

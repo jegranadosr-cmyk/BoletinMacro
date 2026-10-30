@@ -14,6 +14,12 @@ Verified against the live tables (Oct 2026):
   rate) is "Trade balance % GDP".
 - Fiscal deficit: countryeconomy.com/deficit -- plain "numero" cell after the
   eur/dol deficit pair is "Deficit % GDP".
+
+Vietnam: covered for trade balance and fiscal deficit on the regular overview
+tables, but NOT for CPI or unemployment -- those two come from
+TradingEconomics' per-indicator page meta description instead (plain
+server-rendered HTML, no JS needed), same trick used elsewhere in this
+bulletin (bond yields in fetch_debt_bonds.py, etc).
 """
 import re
 import socket
@@ -34,16 +40,27 @@ CPI_URL = "https://countryeconomy.com/cpi"
 UNEMPLOYMENT_URL = "https://countryeconomy.com/unemployment"
 TRADE_BALANCE_URL = "https://countryeconomy.com/trade/balance"
 DEFICIT_URL = "https://countryeconomy.com/deficit"
+TE_CPI_URL = "https://tradingeconomics.com/{slug}/inflation-cpi"
+TE_UNEMPLOYMENT_URL = "https://tradingeconomics.com/{slug}/unemployment-rate"
 
 PAISES = [
     ("Colombia", "colombia"),
     ("EE.UU.", "usa"),
+    ("Reino Unido", "uk"),
+    ("Francia", "france"),
     ("Alemania", "germany"),
+    ("Italia", "italy"),
+    ("España", "spain"),
     ("India", "india"),
     ("Corea del Sur", "south-korea"),
     ("China", "china"),
     ("Japón", "japan"),
+    ("Vietnam", "vietnam"),
 ]
+
+# CPI/unemployment not reliably available on countryeconomy.com for these --
+# read from TradingEconomics instead (see module docstring).
+TE_FALLBACK_SLUGS = {"vietnam"}
 
 
 def _fetch_text(url, timeout=20):
@@ -75,10 +92,29 @@ def _plain_numeros(row_html):
     return [val for cls, val in _numeros(row_html) if cls == ""]
 
 
+def _te_meta_percent(url):
+    """First 'N percent' figure in TradingEconomics' meta description -- it's
+    consistently the latest actual value (e.g. "decreased to 5.08 percent in
+    September from 4.89 percent in August" -- the first number, not the
+    prior one)."""
+    try:
+        html = _fetch_text(url)
+    except Exception:
+        return None
+    m = re.search(r'id="metaDesc"[^>]*content="([^"]*)"', html)
+    if not m:
+        return None
+    pm = re.search(r"(-?[\d.]+)\s*percent", m.group(1))
+    return float(pm.group(1)) if pm else None
+
+
 def fetch_cpi_yoy():
     html = _fetch_text(CPI_URL)
     out = {}
     for _, slug in PAISES:
+        if slug in TE_FALLBACK_SLUGS:
+            out[slug] = _te_meta_percent(TE_CPI_URL.format(slug=slug))
+            continue
         row = _row_html(html, "/countries-cpi/", slug)
         plain = _plain_numeros(row) if row else []
         out[slug] = plain[0] if plain else None
@@ -89,6 +125,9 @@ def fetch_unemployment():
     html = _fetch_text(UNEMPLOYMENT_URL)
     out = {}
     for _, slug in PAISES:
+        if slug in TE_FALLBACK_SLUGS:
+            out[slug] = _te_meta_percent(TE_UNEMPLOYMENT_URL.format(slug=slug))
+            continue
         row = _row_html(html, "/unemployment/", slug)
         plain = _plain_numeros(row) if row else []
         out[slug] = plain[0] if plain else None

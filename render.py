@@ -161,16 +161,18 @@ PAGE_HEIGHT_PX = 3086
 DEVICE_SCALE = 2
 VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE_HEIGHT_PX // DEVICE_SCALE}
 
-# Pagina 2 crecio mas alla del presupuesto estandar de VIEWPORT a medida que
-# se le fueron agregando paises -- por pedido explicito del usuario (2026-10-
-# 30) no se vuelve a achicar la letra para que quepa; en su lugar esta pagina
-# usa un lienzo mas alto que las demas. El ancho y el resto del layout
-# (header, tablas, footer) son identicos, solo cambia cuanto alto captura el
-# screenshot.
+# Paginas 1 y 2 fueron creciendo mas alla del presupuesto estandar de
+# VIEWPORT a medida que se les agregaron paises -- por pedido explicito del
+# usuario (2026-10-30, originalmente sobre pagina 2) no se achica la letra
+# para que quepa; en su lugar cada pagina usa el lienzo mas alto que
+# necesite. El ancho y el resto del layout (header, tablas, footer) son
+# identicos entre paginas, solo cambia cuanto alto captura el screenshot.
+PAGE1_HEIGHT_PX = 3820
+PAGE1_VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE1_HEIGHT_PX // DEVICE_SCALE}
 PAGE2_HEIGHT_PX = 3220
 PAGE2_VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE2_HEIGHT_PX // DEVICE_SCALE}
 
-_VIEWPORT_BY_TEMPLATE = {"page2.html": PAGE2_VIEWPORT}
+_VIEWPORT_BY_TEMPLATE = {"page1.html": PAGE1_VIEWPORT, "page2.html": PAGE2_VIEWPORT}
 
 
 def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
@@ -218,19 +220,19 @@ def render_pdf(data, out_dir, template_name="pdf.html", filename="boletin.pdf"):
     """Single multi-page PDF (vector text, not a rasterized screenshot) --
     sent alongside the images so recipients have a print-quality copy too.
     Each page break is forced by the .pdf-sheet CSS rule in pdf.html rather
-    than relying on content height matching the page size exactly. Uses
-    PAGE2_VIEWPORT's (taller) height uniformly for both pages since
-    Playwright's page.pdf() sets one page size per document -- page 1 ends up
-    with a bit of blank space at the bottom, same as it would if it were
-    simply shorter content on a fixed-size page (already normal elsewhere in
-    this bulletin)."""
+    than relying on content height matching the page size exactly. Uses the
+    tallest per-template viewport height uniformly for every page since
+    Playwright's page.pdf() sets one page size per document -- a shorter page
+    ends up with a bit of blank space at the bottom, same as it would if it
+    were simply shorter content on a fixed-size page (already normal
+    elsewhere in this bulletin)."""
     os.makedirs(out_dir, exist_ok=True)
     html_str = render_html(data, template_name)
     tmp_path = os.path.abspath(os.path.join(out_dir, "_tmp_pdf.html"))
     with open(tmp_path, "w", encoding="utf-8") as f:
         f.write(html_str)
 
-    pdf_height = PAGE2_VIEWPORT["height"]
+    pdf_height = max(v["height"] for v in _VIEWPORT_BY_TEMPLATE.values())
     out_path = os.path.join(out_dir, filename)
     try:
         with sync_playwright() as p:
