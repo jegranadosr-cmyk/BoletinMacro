@@ -71,7 +71,7 @@ def fetch_cpi_yoy():
 
 # ISO2 geo codes for the 4 Eurozone members this bulletin breaks out individually.
 EUROZONE_COUNTRY_GEOS = {
-    "Francia": "FR", "Alemania": "DE", "Italia": "IT", "España": "ES",
+    "Francia": "FR", "Alemania": "DE",
 }
 
 

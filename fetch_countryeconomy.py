@@ -37,15 +37,11 @@ DEFICIT_URL = "https://countryeconomy.com/deficit"
 
 PAISES = [
     ("Colombia", "colombia"),
-    ("Brasil", "brazil"),
-    ("México", "mexico"),
-    ("Chile", "chile"),
-    ("Perú", "peru"),
     ("EE.UU.", "usa"),
     ("Francia", "france"),
     ("Alemania", "germany"),
-    ("Italia", "italy"),
-    ("España", "spain"),
+    ("India", "india"),
+    ("Corea del Sur", "south-korea"),
     ("China", "china"),
     ("Japón", "japan"),
 ]

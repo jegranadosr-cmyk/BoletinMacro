@@ -1,13 +1,12 @@
 """Fetch government debt-to-GDP, 10-year bond yields and sovereign credit
-ratings for France, Germany, Italy, Spain, USA, China, Japan, Colombia,
-Brazil, Mexico, Chile and Peru. Sources verified against independent
-reporting (Oct 2026):
-- Debt/GDP: countryeconomy.com national-debt overview table (all 12).
-- 10Y yield: countryeconomy.com bonds overview table (France/Germany/Italy/
-  Spain/USA/Japan); Colombia has its own countryeconomy.com page; China,
-  Brazil, Mexico, Chile and Peru aren't tracked there at all, so those come
-  from tradingeconomics.com's live quote span instead.
-- Ratings: countryeconomy.com ratings overview table (all 12).
+ratings for France, Germany, USA, India, South Korea, China, Japan and
+Colombia. Sources verified against independent reporting (Oct 2026):
+- Debt/GDP: countryeconomy.com national-debt overview table (all 8).
+- 10Y yield: countryeconomy.com bonds overview table (France/Germany/USA/
+  India); Colombia has its own countryeconomy.com page; China and South
+  Korea aren't tracked there at all, so those come from
+  tradingeconomics.com's live quote span instead.
+- Ratings: countryeconomy.com ratings overview table (all 8).
 
 Sovereign risk is NOT part of this module -- see fetch_cds.py for the real
 5-year CDS spread (a review on 2026-10-29 correctly flagged that this
@@ -40,22 +39,18 @@ RATINGS_URL = "https://countryeconomy.com/ratings"
 PAISES = [
     ("Francia", "france"),
     ("Alemania", "germany"),
-    ("Italia", "italy"),
-    ("España", "spain"),
     ("EE.UU.", "usa"),
     ("China", "china"),
     ("Japón", "japan"),
     ("Colombia", "colombia"),
-    ("Brasil", "brazil"),
-    ("México", "mexico"),
-    ("Chile", "chile"),
-    ("Perú", "peru"),
+    ("India", "india"),
+    ("Corea del Sur", "south-korea"),
 ]
 
 # Countries whose 10Y yield isn't on countryeconomy.com's overview table or
 # its own page -- fetched live from tradingeconomics.com instead. Slug is
 # the same as countryeconomy.com's here, conveniently.
-TE_BOND_SLUGS = {"china", "brazil", "mexico", "chile", "peru"}
+TE_BOND_SLUGS = {"china", "south-korea"}
 
 
 def _fetch_text(url, timeout=20):
