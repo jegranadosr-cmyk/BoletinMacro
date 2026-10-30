@@ -1,12 +1,10 @@
 name: Boletin Macro Unvesting diario
 
 on:
-  schedule:
-    # ~7:00 am America/Bogota (UTC-5) = ~12:00 UTC, every day. Minute offset
-    # (7, not 0) is deliberate -- GitHub's own docs warn that top-of-the-hour
-    # cron triggers queue behind a huge global spike and can be delayed by
-    # hours or skipped outright; a non-zero minute avoids most of that queue.
-    - cron: "7 12 * * *"
+  # Envio automatico diario desactivado: este boletin (diseno "Siete
+  # Magnificas") duplicaba el envio por Telegram del boletin "Lupa al
+  # mercado" del otro repo. Se deja workflow_dispatch para poder correrlo
+  # a mano si hace falta.
   workflow_dispatch: {}
 
 jobs:
