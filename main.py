@@ -149,7 +149,7 @@ def build_data():
     # area y reservas de petroleo/gas. 9 regiones de la pagina 1 + paises que
     # destacan por poblacion, petroleo, gas o su region.
     r, err = safe(fdem.fetch_demographics)
-    data["demografia"] = r if not err else []
+    demografia_by_pais = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"Demografia: {err}")
 
@@ -157,6 +157,27 @@ def build_data():
     data["reservas_by_pais"] = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"Reservas: {err}")
+
+    # Tabla "Poblacion, PIB...": los 17 paises de siempre, orden por poblacion
+    # desc (pedido explicito del usuario).
+    POBLACION_ROSTER = [
+        "Colombia", "EE.UU.", "Iran", "Iraq", "Alemania", "India", "Corea del Sur",
+        "China", "Japón", "Brasil", "Rusia", "Arabia Saudita", "Qatar", "Indonesia",
+        "Canadá", "Australia", "Kuwait",
+    ]
+    data["demografia_poblacion"] = sorted(
+        (demografia_by_pais[p] for p in POBLACION_ROSTER if p in demografia_by_pais),
+        key=lambda d: (d["poblacion"] is None, -(d["poblacion"] or 0)),
+    )
+
+    # Tabla "Territorio y reservas": los mismos 17, pero Corea del Sur
+    # reemplazada por Venezuela (pedido explicito del usuario), orden por
+    # area desc.
+    AREA_ROSTER = ["Venezuela" if p == "Corea del Sur" else p for p in POBLACION_ROSTER]
+    data["demografia_area"] = sorted(
+        (demografia_by_pais[p] for p in AREA_ROSTER if p in demografia_by_pais),
+        key=lambda d: (d["area_km2"] is None, -(d["area_km2"] or 0)),
+    )
 
     data["errors"] = errors
     return data
@@ -191,7 +212,8 @@ def run(send=True):
     data = main()
 
     pages = rd.render_bulletin(data, "render_out")
-    print(f"Rendered: {', '.join(pages)}")
+    pdf_path = rd.render_pdf(data, "render_out")
+    print(f"Rendered: {', '.join(pages)}, {pdf_path}")
 
     if send:
         token = os.environ.get("TELEGRAM_BOT_TOKEN")
@@ -203,6 +225,13 @@ def run(send=True):
         print(json.dumps(result, indent=2))
         if not result.get("ok"):
             raise RuntimeError(f"Telegram send failed: {result}")
+
+        # PDF por separado (sendDocument) -- preserva texto vectorial en vez
+        # de las imagenes rasterizadas, para quien quiera guardar/imprimir.
+        pdf_result = st.send_document(token, chat_id, pdf_path)
+        print(json.dumps(pdf_result, indent=2))
+        if not pdf_result.get("ok"):
+            raise RuntimeError(f"Telegram PDF send failed: {pdf_result}")
     return data
 
 

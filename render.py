@@ -198,3 +198,37 @@ def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
                 os.remove(tmp_path)
 
     return out_paths
+
+
+def render_pdf(data, out_dir, template_name="pdf.html", filename="boletin.pdf"):
+    """Single multi-page PDF (vector text, not a rasterized screenshot) with
+    both pages at the same 1000x1543 CSS px size as the PNGs -- sent
+    alongside the images so recipients have a print-quality copy too. Each
+    page break is forced by the .pdf-sheet CSS rule in pdf.html rather than
+    relying on content height matching the page size exactly."""
+    os.makedirs(out_dir, exist_ok=True)
+    html_str = render_html(data, template_name)
+    tmp_path = os.path.abspath(os.path.join(out_dir, "_tmp_pdf.html"))
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        f.write(html_str)
+
+    out_path = os.path.join(out_dir, filename)
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            bpage = browser.new_page(viewport={"width": VIEWPORT["width"], "height": VIEWPORT["height"]})
+            bpage.goto("file:///" + tmp_path.replace("\\", "/"))
+            bpage.wait_for_timeout(400)
+            bpage.pdf(
+                path=out_path,
+                width=f"{VIEWPORT['width']}px",
+                height=f"{VIEWPORT['height']}px",
+                print_background=True,
+                margin={"top": "0px", "bottom": "0px", "left": "0px", "right": "0px"},
+            )
+            browser.close()
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+    return out_path

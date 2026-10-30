@@ -45,6 +45,10 @@ PAISES = [
     ("Canadá", "CAN", "Canada"),
     ("Australia", "AUS", "Australia"),
     ("Kuwait", "KWT", "Kuwait"),
+    # Solo para la tabla de territorio/reservas (reemplaza a Corea del Sur
+    # ahi, pedido explicito del usuario) -- no aparece en la tabla de
+    # poblacion/PIB, que conserva a Corea del Sur.
+    ("Venezuela", "VEN", "Venezuela"),
 ]
 
 

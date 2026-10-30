@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="{{ templates }}/base.css">
+<style>
+  /* Cada .pdf-sheet es una pagina del PDF -- el equipo responsable solo va
+     en la ultima (pagina 2), no se repite en la primera. */
+  .pdf-sheet { page-break-after: always; }
+  .pdf-sheet:last-child { page-break-after: auto; }
+</style>
+</head>
+<body>
+{% set show_team = False %}
+<div class="pdf-sheet">
+{% include "_page1_content.html" %}
+</div>
+<div class="pdf-sheet">
+{% include "_page2_content.html" %}
+</div>
+</body>
+</html>

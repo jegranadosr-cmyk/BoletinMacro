@@ -118,6 +118,12 @@ table.boletin-table-dense caption.caption-lg { font-size: 16px; padding: 9px 0; 
 table.boletin-table-dense thead th { font-size: 10.5px; padding: 8px 6px 6px; }
 table.boletin-table-dense tbody td { padding: 7.5px 6px; }
 
+/* page2 variant (17-row tables, but no footnotes and more vertical room) */
+table.boletin-table-dense2 { font-size: 14px; }
+table.boletin-table-dense2 caption.caption-lg { font-size: 16.5px; padding: 9px 0; }
+table.boletin-table-dense2 thead th { font-size: 11px; padding: 8px 6px 6px; }
+table.boletin-table-dense2 tbody td { padding: 6.5px 6px; }
+
 
 .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
 .dot.up { background: var(--green-text); }

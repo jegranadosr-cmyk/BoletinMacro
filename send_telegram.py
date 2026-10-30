@@ -36,6 +36,38 @@ def send_photo(token, chat_id, image_path, caption=None):
     return result
 
 
+def send_document(token, chat_id, file_path, caption=None):
+    boundary = "----UnvestingBoundary7a8b9c"
+    url = f"https://api.telegram.org/bot{token}/sendDocument"
+
+    body = bytearray()
+
+    def add_field(name, value):
+        body.extend(f"--{boundary}\r\n".encode())
+        body.extend(f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode())
+        body.extend(f"{value}\r\n".encode())
+
+    add_field("chat_id", chat_id)
+    if caption:
+        add_field("caption", caption)
+
+    filename = os.path.basename(file_path)
+    body.extend(f"--{boundary}\r\n".encode())
+    body.extend(f'Content-Disposition: form-data; name="document"; filename="{filename}"\r\n'.encode())
+    body.extend(b"Content-Type: application/pdf\r\n\r\n")
+    with open(file_path, "rb") as f:
+        body.extend(f.read())
+    body.extend(b"\r\n")
+    body.extend(f"--{boundary}--\r\n".encode())
+
+    req = urllib.request.Request(url, data=bytes(body), method="POST")
+    req.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
+
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        result = json.loads(resp.read())
+    return result
+
+
 def send_bulletin(token, chat_id, image_paths, caption=None):
     """Telegram's sendMediaGroup requires 2-10 items, so a single-page
     bulletin has to go through sendPhoto instead."""

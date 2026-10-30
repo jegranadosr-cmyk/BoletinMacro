@@ -38,6 +38,7 @@ jobs:
           name: boletin-macro-${{ github.run_id }}
           path: |
             render_out/*.png
+            render_out/*.pdf
             data_dump.json
           retention-days: 7
           if-no-files-found: ignore
