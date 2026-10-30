@@ -13,7 +13,6 @@ import fetch_cds as fcds
 import fetch_calendar as fcal
 import fetch_market as fmkt
 import fetch_worldbank as fwb
-import fetch_news as fnews
 import resumen as rs
 import render as rd
 import send_telegram as st
@@ -177,12 +176,6 @@ def build_data():
     data["calendario"] = r if not err else []
     if err:
         errors.append(f"Calendario: {err}")
-
-    # Noticias relevantes de macroeconomia y coyuntura (TradingEconomics)
-    r, err = safe(fnews.fetch_relevant_news)
-    data["noticias"] = r if not err else []
-    if err:
-        errors.append(f"Noticias: {err}")
 
     data["errors"] = errors
     return data

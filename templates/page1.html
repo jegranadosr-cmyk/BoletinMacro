@@ -24,7 +24,7 @@
   </div>
 
   <div class="content">
-    <table class="boletin-table">
+    <table class="boletin-table boletin-table-hero">
       <caption class="caption-lg">Mercados clave</caption>
       <thead><tr><th>Indicador</th><th class="num">Nivel</th><th class="num">%Día</th><th class="num">%Mes</th></tr></thead>
       <tbody>
@@ -42,7 +42,7 @@
       DXY (fortaleza del dólar), EUR/USD y USD/COP (tipo de cambio; en USD/COP verde = sube el dólar frente al peso), oro (refugio), WTI y Brent (presión inflacionaria vía energía -- Brent es la referencia de las exportaciones colombianas). Fuente: Yahoo Finance.
     </div>
 
-    <table class="boletin-table boletin-table-dense" style="margin-top:16px;">
+    <table class="boletin-table boletin-table-hero" style="margin-top:22px;">
       <caption class="caption-lg">Crecimiento, inflación, desempleo y tasas de política monetaria</caption>
       <thead><tr>
         <th>País</th><th class="num">PIB 1A</th><th class="num">PIB 5A</th>
@@ -69,20 +69,6 @@
       Fuentes: Banco Mundial, Eurostat, countryeconomy.com, FRED. Desempleo de China no disponible.
     </div>
 
-    <div class="section-title" style="margin-top:16px;">NOTICIAS RELEVANTES</div>
-    {% for n in noticias %}
-      <div class="news-item">
-        <div class="news-meta">
-          <span class="news-country">{{ n.pais }}</span>
-          <span class="news-category">{{ n.categoria }}</span>
-          <span class="news-date">{{ n.fecha }}</span>
-        </div>
-        <div class="news-title">{{ n.titulo }}</div>
-        <div class="news-summary">{{ n.resumen }}</div>
-      </div>
-    {% else %}
-      <div class="footnote">No hay noticias relevantes disponibles en este momento.</div>
-    {% endfor %}
   </div>
 
   <div class="footer">
