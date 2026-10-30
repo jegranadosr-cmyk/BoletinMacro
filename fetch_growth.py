@@ -36,6 +36,10 @@ HORIZONS = (1, 5)
 
 PAISES = [
     ("Colombia", "COL"),
+    ("Brasil", "BRA"),
+    ("México", "MEX"),
+    ("Chile", "CHL"),
+    ("Perú", "PER"),
     ("EE.UU.", "USA"),
     ("Eurozona", "EMU"),
     ("Francia", "FRA"),

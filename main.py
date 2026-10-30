@@ -9,6 +9,8 @@ import fetch_eurostat as feu
 import fetch_growth as fg
 import fetch_rates as fr
 import fetch_debt_bonds as fdb
+import fetch_cds as fcds
+import fetch_calendar as fcal
 import fetch_market as fmkt
 import fetch_worldbank as fwb
 import fetch_news as fnews
@@ -20,8 +22,15 @@ MESES_ES = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
             "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 DIAS_ES = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 
-# Canonical region order used across every "9-region" table in the bulletin.
-REGIONES = ["Colombia", "EE.UU.", "Eurozona", "Francia", "Alemania", "Italia", "España", "China", "Japón"]
+# Canonical region order used across every table in the bulletin (same order,
+# every table -- a 2026-10-29 review flagged that the country order used to
+# vary from one table to the next).
+REGIONES = [
+    "Colombia", "Brasil", "México", "Chile", "Perú", "EE.UU.", "Eurozona",
+    "Francia", "Alemania", "Italia", "España", "China", "Japón",
+]
+# Same order, minus Eurozona -- it isn't a sovereign bond/CDS/rating issuer.
+REGIONES_SOBERANOS = [p for p in REGIONES if p != "Eurozona"]
 
 
 def safe(fn, *args, **kwargs):
@@ -99,42 +108,75 @@ def build_data():
     if err:
         errors.append(f"TasasBC: {err}")
 
-    # Deuda/PIB, bono a 10 anos, riesgo pais y rating: Francia, Alemania, Italia,
-    # Espana, EE.UU., China, Japon, Colombia (8 paises, sin Eurozona -- no es un emisor soberano)
+    # Deuda/PIB, bono a 10 anos y rating: todos los REGIONES_SOBERANOS (12)
     r, err = safe(fdb.fetch_debt_and_bonds)
-    data["deuda_bonos"] = r if not err else []
+    deuda_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"DeudaBonos: {err}")
 
-    # Resumen coyuntural: una fila por pais con tasa de politica monetaria,
-    # deuda/PIB y bono a 10 anos. Los 4 paises de la Eurozona usan la tasa del BCE.
+    # CDS soberano real a 5 anos (Playwright, worldgovernmentbonds.com) --
+    # reemplaza el antiguo "diferencial de bono vs Bund" mal etiquetado como
+    # riesgo pais (ver fetch_cds.py). Peru no esta cubierto por la fuente.
+    r, err = safe(fcds.fetch_cds_5y)
+    cds_by_country = r if not err else {}
+    if err:
+        errors.append(f"CDS: {err}")
+
+    # Tasa de politica monetaria + tasa real ex-post (tasa - inflacion del mismo
+    # pais) para las 13 regiones (incluida la Eurozona misma, que muestra la
+    # tasa del BCE directamente). Los 4 paises miembro tambien usan la tasa del BCE.
     rate_by_country = {t["pais"]: t for t in data["tasas_bancos_centrales"]}
+    inflacion_by_country = {d["pais"]: d.get("inflacion") for d in macro_indicadores}
     RATE_LOOKUP = {
-        "Francia": "Eurozona", "Alemania": "Eurozona", "Italia": "Eurozona", "España": "Eurozona",
+        "Eurozona": "Eurozona", "Francia": "Eurozona", "Alemania": "Eurozona",
+        "Italia": "Eurozona", "España": "Eurozona",
         "EE.UU.": "EE.UU.", "China": "China", "Japón": "Japón", "Colombia": "Colombia",
+        "Brasil": "Brasil", "México": "México", "Chile": "Chile", "Perú": "Perú",
     }
-    resumen_coyuntural = []
-    for d in data["deuda_bonos"]:
-        rate = rate_by_country.get(RATE_LOOKUP.get(d["pais"]))
+    tasas_por_region = {}
+    for pais in REGIONES:
+        rate = rate_by_country.get(RATE_LOOKUP.get(pais))
         if rate and rate["tasa"] is not None:
             tasa_label = f"{rate['tasa_label']} ({rate['banco']})"
         else:
             tasa_label = "-"
+        inflacion_pais = inflacion_by_country.get(pais)
+        # Tasa real ex-post = tasa de politica - inflacion interanual del mismo pais
+        # (para Eurozona usa la inflacion HICP de cada pais, no la tasa BCE restada
+        # de una inflacion distinta -- asi la tasa real sigue siendo comparable).
+        tasa_real = (rate["tasa"] - inflacion_pais) if (rate and rate["tasa"] is not None and inflacion_pais is not None) else None
+        tasas_por_region[pais] = {"tasa_label": tasa_label, "tasa_real": tasa_real}
+    data["resumen_coyuntural_by_pais"] = tasas_por_region
+
+    # Resumen coyuntural: una fila por pais soberano (sin Eurozona, no es un
+    # emisor soberano) con deuda/PIB, bono a 10 anos, CDS y rating. Mismo
+    # orden (REGIONES_SOBERANOS) que las demas tablas.
+    resumen_coyuntural = []
+    for pais in REGIONES_SOBERANOS:
+        d = deuda_by_country.get(pais, {})
         resumen_coyuntural.append({
-            "pais": d["pais"], "tasa_label": tasa_label,
-            "deuda_pib": d["deuda_pib"], "bono_10y": d["bono_10y"],
-            "riesgo_pais_pb": d.get("riesgo_pais_pb"),
+            "pais": pais, **tasas_por_region[pais],
+            "deuda_pib": d.get("deuda_pib"), "bono_10y": d.get("bono_10y"),
+            "cds_5y": cds_by_country.get(pais),
             "rating_moodys": d.get("rating_moodys"),
             "rating_sp": d.get("rating_sp"),
             "rating_fitch": d.get("rating_fitch"),
         })
     data["resumen_coyuntural"] = resumen_coyuntural
+    # Kept for any downstream code that wants the raw per-country dicts.
+    data["deuda_bonos"] = [deuda_by_country[p] for p in REGIONES_SOBERANOS if p in deuda_by_country]
 
     # Mercados clave: dolar (DXY), EUR/USD, USD/COP, oro, petroleo WTI
     r, err = safe(fmkt.fetch_mercados_clave)
     data["mercados_clave"] = r if not err else []
     if err:
         errors.append(f"MercadosClave: {err}")
+
+    # Calendario de proximos eventos macro relevantes (Playwright, TradingEconomics)
+    r, err = safe(fcal.fetch_upcoming_events)
+    data["calendario"] = r if not err else []
+    if err:
+        errors.append(f"Calendario: {err}")
 
     # Noticias relevantes de macroeconomia y coyuntura (TradingEconomics)
     r, err = safe(fnews.fetch_relevant_news)

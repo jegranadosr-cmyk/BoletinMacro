@@ -78,6 +78,7 @@ MERCADOS_CLAVE = [
     ("USD/COP", "COP=X"),
     ("Oro (oz troy)", "GC=F"),
     ("Petróleo WTI", "CL=F"),
+    ("Petróleo Brent", "BZ=F"),
 ]
 
 

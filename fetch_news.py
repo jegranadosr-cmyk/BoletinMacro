@@ -12,6 +12,7 @@ so filtering logic doesn't need a translation table. The feed mixes everything
 countries/blocs this bulletin covers and to macro-relevant categories.
 """
 import json
+import re
 import socket
 import urllib.request
 
@@ -52,7 +53,19 @@ def _fetch_page(start, size=100, timeout=20):
         return json.loads(resp.read())
 
 
-def fetch_relevant_news(max_items=5, pages=3, page_size=100):
+def _first_sentence(desc, max_len=200):
+    """A complete first sentence instead of a mid-word "..." truncation (flagged
+    in the 2026-10-29 review). Falls back to a hard cut only if the first
+    sentence is itself longer than max_len."""
+    if not desc:
+        return ""
+    cut = re.split(r"(?<=[.!?])\s+", desc, maxsplit=1)[0]
+    if len(cut) > max_len:
+        cut = cut[:max_len - 1].rsplit(" ", 1)[0] + "…"
+    return cut
+
+
+def fetch_relevant_news(max_items=4, pages=3, page_size=100):
     items = []
     for i in range(pages):
         try:
@@ -73,9 +86,7 @@ def fetch_relevant_news(max_items=5, pages=3, page_size=100):
         if combo in seen_combo:
             continue
         seen_combo.add(combo)
-        desc = (it.get("description") or "").strip()
-        if len(desc) > 220:
-            desc = desc[:217].rsplit(" ", 1)[0] + "..."
+        desc = _first_sentence((it.get("description") or "").strip())
         out.append({
             "titulo": it["title"],
             "resumen": desc,

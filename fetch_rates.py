@@ -141,8 +141,32 @@ def fetch_colombia():
     return {"pais": "Colombia", "banco": "BanRep", "tasa": val, "tasa_label": f"{val:.2f}%", "fecha": fecha}
 
 
+def _simple_rate(pais, slug, banco):
+    val, fecha = _countryeconomy_rate(slug)
+    if val is None:
+        return {"pais": pais, "banco": banco, "tasa": None, "tasa_label": None, "fecha": None}
+    return {"pais": pais, "banco": banco, "tasa": val, "tasa_label": f"{val:.2f}%", "fecha": fecha}
+
+
+def fetch_brazil():
+    return _simple_rate("Brasil", "brazil", "BCB (Selic)")
+
+
+def fetch_mexico():
+    return _simple_rate("México", "mexico", "Banxico")
+
+
+def fetch_chile():
+    return _simple_rate("Chile", "chile", "BCCh")
+
+
+def fetch_peru():
+    return _simple_rate("Perú", "peru", "BCRP")
+
+
 def fetch_policy_rates():
-    fetchers = [fetch_ecb, fetch_fed, fetch_china, fetch_boj, fetch_colombia]
+    fetchers = [fetch_ecb, fetch_fed, fetch_china, fetch_boj, fetch_colombia,
+                fetch_brazil, fetch_mexico, fetch_chile, fetch_peru]
     out = []
     for fn in fetchers:
         try:

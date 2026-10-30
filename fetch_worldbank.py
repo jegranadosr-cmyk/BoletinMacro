@@ -42,6 +42,10 @@ BASE = "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}?for
 
 PAISES = [
     ("Colombia", "COL"),
+    ("Brasil", "BRA"),
+    ("México", "MEX"),
+    ("Chile", "CHL"),
+    ("Perú", "PER"),
     ("EE.UU.", "USA"),
     ("Eurozona", "EMU"),
     ("Francia", "FRA"),

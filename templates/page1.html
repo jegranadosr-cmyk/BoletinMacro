@@ -13,7 +13,7 @@
       </div>
       <div class="hero-title">
         <h1>Lupa a la <span class="accent">macroeconomía</span></h1>
-        <div class="sub">Unvesting Group S.A.S.</div>
+        <div class="sub">Unvesting Group S.A.S. &bull; Coyuntura</div>
       </div>
     </div>
     <div class="hero-right">
@@ -25,71 +25,64 @@
 
   <div class="content">
     <table class="boletin-table">
-      <caption class="caption-lg">Crecimiento económico, inflación y desempleo</caption>
+      <caption class="caption-lg">Mercados clave</caption>
+      <thead><tr><th>Indicador</th><th class="num">Nivel</th><th class="num">%Día</th><th class="num">%Mes</th></tr></thead>
+      <tbody>
+      {% for m in mercados_clave %}
+        <tr>
+          <td class="name">{{ m.nombre }}</td>
+          <td class="num">{{ fmt_fx(m.price) if m.nombre == 'EUR/USD' else fmt_price(m.price) }}</td>
+          <td class="num">{{ pct_span(m.pct_day) }}</td>
+          <td class="num">{{ pct_span(m.pct_month) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="footnote">
+      DXY (fortaleza del dólar), EUR/USD y USD/COP (tipo de cambio; en USD/COP verde = sube el dólar frente al peso), oro (refugio), WTI y Brent (presión inflacionaria vía energía -- Brent es la referencia de las exportaciones colombianas). Fuente: Yahoo Finance.
+    </div>
+
+    <table class="boletin-table boletin-table-dense" style="margin-top:16px;">
+      <caption class="caption-lg">Crecimiento, inflación, desempleo y tasas de política monetaria</caption>
       <thead><tr>
         <th>País</th><th class="num">PIB 1A</th><th class="num">PIB 5A</th>
         <th class="num">Inflación</th><th class="num">Desempleo</th>
+        <th>Tasa BC</th><th class="num">Tasa real</th>
       </tr></thead>
       <tbody>
       {% for d in macro_indicadores %}
+        {% set rc = resumen_coyuntural_by_pais.get(d.pais, {}) %}
         <tr>
           <td class="name">{{ d.pais }}</td>
           <td class="num">{{ pct_span(d.pib_1a) }}</td>
           <td class="num">{{ pct_span(d.pib_5a) }}</td>
           <td class="num">{{ level_pct(d.inflacion) }}</td>
           <td class="num">{{ level_pct(d.desempleo) }}</td>
+          <td>{{ rc.tasa_label or '-' }}</td>
+          <td class="num">{{ pct_span(rc.tasa_real) if rc.tasa_real is defined else '-' }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
     <div class="footnote">
-      PIB 1A/5A: variación promedio anual del PIB real (CAGR, dato anual del Banco Mundial, año de referencia {{ pib_anio_ref }} -- no es el último trimestre, que suele publicarse antes que el cierre anual).
-      Inflación: variación interanual del IPC (HICP para los 4 países de la Eurozona, mismo criterio que el agregado Eurozona).
-      Fuentes: Banco Mundial (PIB), Eurostat (inflación Eurozona), countryeconomy.com (inflación resto y desempleo). Desempleo de China no disponible en la fuente.
+      PIB 1A/5A: CAGR real (Banco Mundial, dato anual, año {{ pib_anio_ref }} -- no es el último trimestre). Inflación: IPC interanual (HICP para los 4 países de la Eurozona). Tasa BC: facilidad de depósito para el BCE, no la de operaciones principales/MRO. Tasa real = tasa de política - inflación interanual del mismo país (ex-post, no ajustada por expectativas).
+      Fuentes: Banco Mundial, Eurostat, countryeconomy.com, FRED. Desempleo de China no disponible.
     </div>
 
-    <table class="boletin-table" style="margin-top:22px;">
-      <caption class="caption-lg">Balanza comercial, fiscal y cuenta corriente</caption>
-      <thead><tr>
-        <th>País</th><th class="num">Bal. Comercial</th><th class="num">Balance Fiscal</th>
-        <th class="num">Cta. Corriente</th><th class="num">Cta. Capital</th><th class="num">Reservas Int.</th>
-      </tr></thead>
-      <tbody>
-      {% for d in macro_indicadores %}
-        <tr>
-          <td class="name">{{ d.pais }}</td>
-          <td class="num">{{ pct_span(d.balanza_comercial_pib) }}</td>
-          <td class="num">{{ pct_span(d.deficit_fiscal_pib) }}</td>
-          <td class="num">{{ pct_span(d.cuenta_corriente_pib) }}</td>
-          <td class="num">{{ fmt_usd_billions(d.cuenta_capital_usd) }}</td>
-          <td class="num">{{ fmt_usd_billions_plain(d.reservas_internacionales_usd) }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    <div class="footnote">
-      Balanza comercial, balance fiscal y cuenta corriente: % del PIB (negativo = déficit, positivo = superávit). Cuenta de capital y reservas internacionales: miles de millones de dólares (US$B).
-      Fuentes: countryeconomy.com (Eurostat para Eurozona) y Banco Mundial (cuenta corriente, cuenta de capital, reservas). Cuenta de capital de Colombia no disponible en la fuente.
-    </div>
-
-    <table class="boletin-table" style="margin-top:22px;">
-      <caption class="caption-lg">Tasas de política monetaria, deuda pública y bono a 10 años</caption>
-      <thead><tr><th>País</th><th>Tasa de política monetaria</th><th class="num">Deuda/PIB</th><th class="num">Bono 10A</th></tr></thead>
-      <tbody>
-      {% for d in resumen_coyuntural %}
-        <tr>
-          <td class="name">{{ d.pais }}</td>
-          <td>{{ d.tasa_label }}</td>
-          <td class="num">{{ '%.2f'|format(d.deuda_pib) + '%' if d.deuda_pib is not none else '-' }}</td>
-          <td class="num">{{ '%.2f'|format(d.bono_10y) + '%' if d.bono_10y is not none else '-' }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    <div class="footnote">
-      Tasa de política monetaria: Fed (EE.UU.), BCE -- facilidad de depósito, no confundir con la tasa de operaciones principales/MRO que suele citar la prensa -- (Francia/Alemania/Italia/España), PBOC (China), BOJ (Japón), BanRep (Colombia).
-      Deuda/PIB y bono a 10 años: countryeconomy.com y tradingeconomics.com (bono China).
-    </div>
+    <div class="section-title" style="margin-top:16px;">NOTICIAS RELEVANTES</div>
+    {% for n in noticias %}
+      <div class="news-item">
+        <div class="news-meta">
+          <span class="news-country">{{ n.pais }}</span>
+          <span class="news-category">{{ n.categoria }}</span>
+          <span class="news-date">{{ n.fecha }}</span>
+        </div>
+        <div class="news-title">{{ n.titulo }}</div>
+        <div class="news-summary">{{ n.resumen }}</div>
+      </div>
+    {% else %}
+      <div class="footnote">No hay noticias relevantes disponibles en este momento.</div>
+    {% endfor %}
   </div>
 
   <div class="footer">
