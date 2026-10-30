@@ -14,6 +14,16 @@ Verified against the live tables (Oct 2026):
   rate) is "Trade balance % GDP".
 - Fiscal deficit: countryeconomy.com/deficit -- plain "numero" cell after the
   eur/dol deficit pair is "Deficit % GDP".
+
+Iran/Iraq (added 2026-10-30): both are covered for trade balance and fiscal
+deficit on the regular overview tables, but NOT for unemployment, and Iran's
+own CPI row on countryeconomy.com/cpi is stale (dated June 2023, nowhere near
+current given Iran's inflation has moved a lot since). For CPI and
+unemployment only, both countries are instead read from TradingEconomics'
+per-indicator page meta description (e.g. "Inflation Rate in Iran decreased
+to 87.90 percent in July..." on tradingeconomics.com/iran/inflation-cpi) --
+plain server-rendered HTML, no JS needed, same trick as the ratings/bonds
+TE fallback in fetch_debt_bonds.py.
 """
 import re
 import socket
@@ -34,17 +44,24 @@ CPI_URL = "https://countryeconomy.com/cpi"
 UNEMPLOYMENT_URL = "https://countryeconomy.com/unemployment"
 TRADE_BALANCE_URL = "https://countryeconomy.com/trade/balance"
 DEFICIT_URL = "https://countryeconomy.com/deficit"
+TE_CPI_URL = "https://tradingeconomics.com/{slug}/inflation-cpi"
+TE_UNEMPLOYMENT_URL = "https://tradingeconomics.com/{slug}/unemployment-rate"
 
 PAISES = [
     ("Colombia", "colombia"),
     ("EE.UU.", "usa"),
-    ("Francia", "france"),
     ("Alemania", "germany"),
     ("India", "india"),
     ("Corea del Sur", "south-korea"),
     ("China", "china"),
     ("Japón", "japan"),
+    ("Iran", "iran"),
+    ("Iraq", "iraq"),
 ]
+
+# CPI/unemployment not reliably available on countryeconomy.com for these --
+# read from TradingEconomics instead (see module docstring).
+TE_FALLBACK_SLUGS = {"iran", "iraq"}
 
 
 def _fetch_text(url, timeout=20):
@@ -76,10 +93,28 @@ def _plain_numeros(row_html):
     return [val for cls, val in _numeros(row_html) if cls == ""]
 
 
+def _te_meta_percent(url):
+    """First 'N percent' figure in TradingEconomics' meta description -- it's
+    consistently the latest actual value (e.g. "decreased to 87.90 percent in
+    July from 88.60 percent in June" -- the first number, not the prior one)."""
+    try:
+        html = _fetch_text(url)
+    except Exception:
+        return None
+    m = re.search(r'id="metaDesc"[^>]*content="([^"]*)"', html)
+    if not m:
+        return None
+    pm = re.search(r"(-?[\d.]+)\s*percent", m.group(1))
+    return float(pm.group(1)) if pm else None
+
+
 def fetch_cpi_yoy():
     html = _fetch_text(CPI_URL)
     out = {}
     for _, slug in PAISES:
+        if slug in TE_FALLBACK_SLUGS:
+            out[slug] = _te_meta_percent(TE_CPI_URL.format(slug=slug))
+            continue
         row = _row_html(html, "/countries-cpi/", slug)
         plain = _plain_numeros(row) if row else []
         out[slug] = plain[0] if plain else None
@@ -90,6 +125,9 @@ def fetch_unemployment():
     html = _fetch_text(UNEMPLOYMENT_URL)
     out = {}
     for _, slug in PAISES:
+        if slug in TE_FALLBACK_SLUGS:
+            out[slug] = _te_meta_percent(TE_UNEMPLOYMENT_URL.format(slug=slug))
+            continue
         row = _row_html(html, "/unemployment/", slug)
         plain = _plain_numeros(row) if row else []
         out[slug] = plain[0] if plain else None

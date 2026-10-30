@@ -30,21 +30,21 @@ BASE = "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}?for
 PAISES = [
     ("Colombia", "COL", "Colombia"),
     ("EE.UU.", "USA", "United States"),
-    ("Eurozona", "EMU", None),
-    ("Francia", "FRA", "France"),
+    ("Iran", "IRN", "Iran"),
+    ("Iraq", "IRQ", "Iraq"),
     ("Alemania", "DEU", "Germany"),
     ("India", "IND", "India"),
     ("Corea del Sur", "KOR", "South Korea"),
     ("China", "CHN", "China"),
     ("Japón", "JPN", "Japan"),
     ("Brasil", "BRA", "Brazil"),
-    ("México", "MEX", "Mexico"),
     ("Rusia", "RUS", "Russia"),
     ("Arabia Saudita", "SAU", "Saudi Arabia"),
-    ("Nigeria", "NGA", "Nigeria"),
+    ("Qatar", "QAT", "Qatar"),
     ("Indonesia", "IDN", "Indonesia"),
     ("Canadá", "CAN", "Canada"),
     ("Australia", "AUS", "Australia"),
+    ("Kuwait", "KWT", "Kuwait"),
 ]
 
 

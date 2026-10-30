@@ -11,6 +11,10 @@ Each source was cross-checked against independent news reporting (Oct 2026):
   2024 value), so Japan is sourced from global-rates.com instead, which matched
   independent news reporting.
 - PBOC / BanRep: countryeconomy.com verified correct against independent sources.
+- Markazi (Iran) / CBI (Iraq): not on countryeconomy.com/key-rates at all --
+  read from TradingEconomics' per-country interest-rate page meta description
+  instead (same "N percent" extraction trick used for CPI/unemployment in
+  fetch_countryeconomy.py).
 """
 import re
 import socket
@@ -37,6 +41,7 @@ FRED_HEADERS = {"User-Agent": "curl/8.0"}
 FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={series}"
 COUNTRYECONOMY_URL = "https://countryeconomy.com/key-rates"
 BOJ_URL = "https://www.global-rates.com/en/interest-rates/central-banks/9/japanese-boj-overnight-call-rate/"
+TE_INTEREST_RATE_URL = "https://tradingeconomics.com/{slug}/interest-rate"
 
 
 def _fetch_text(url, timeout=20, headers=None):
@@ -156,9 +161,35 @@ def fetch_south_korea():
     return _simple_rate("Corea del Sur", "south-korea", "BOK")
 
 
+def _te_policy_rate(slug):
+    try:
+        html = _fetch_text(TE_INTEREST_RATE_URL.format(slug=slug))
+    except Exception:
+        return None
+    m = re.search(r'id="metaDesc"[^>]*content="([^"]*)"', html)
+    if not m:
+        return None
+    pm = re.search(r"(-?[\d.]+)\s*percent", m.group(1))
+    return float(pm.group(1)) if pm else None
+
+
+def fetch_iran():
+    val = _te_policy_rate("iran")
+    if val is None:
+        return {"pais": "Iran", "banco": "Markazi", "tasa": None, "tasa_label": None, "fecha": None}
+    return {"pais": "Iran", "banco": "Markazi", "tasa": val, "tasa_label": f"{val:.2f}%", "fecha": None}
+
+
+def fetch_iraq():
+    val = _te_policy_rate("iraq")
+    if val is None:
+        return {"pais": "Iraq", "banco": "CBI", "tasa": None, "tasa_label": None, "fecha": None}
+    return {"pais": "Iraq", "banco": "CBI", "tasa": val, "tasa_label": f"{val:.2f}%", "fecha": None}
+
+
 def fetch_policy_rates():
     fetchers = [fetch_ecb, fetch_fed, fetch_china, fetch_boj, fetch_colombia,
-                fetch_india, fetch_south_korea]
+                fetch_india, fetch_south_korea, fetch_iran, fetch_iraq]
     out = []
     for fn in fetchers:
         try:

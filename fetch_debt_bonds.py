@@ -1,12 +1,15 @@
 """Fetch government debt-to-GDP, 10-year bond yields and sovereign credit
-ratings for France, Germany, USA, India, South Korea, China, Japan and
-Colombia. Sources verified against independent reporting (Oct 2026):
-- Debt/GDP: countryeconomy.com national-debt overview table (all 8).
-- 10Y yield: countryeconomy.com bonds overview table (France/Germany/USA/
-  India); Colombia has its own countryeconomy.com page; China and South
-  Korea aren't tracked there at all, so those come from
-  tradingeconomics.com's live quote span instead.
-- Ratings: countryeconomy.com ratings overview table (all 8).
+ratings for Germany, USA, India, South Korea, China, Japan, Colombia, Iran
+and Iraq. Sources verified against independent reporting (Oct 2026):
+- Debt/GDP: countryeconomy.com national-debt overview table (all 9).
+- 10Y yield: countryeconomy.com bonds overview table (Germany/USA/India);
+  Colombia has its own countryeconomy.com page; China and South Korea aren't
+  tracked there at all, so those come from tradingeconomics.com's live quote
+  span instead. Iran/Iraq aren't tracked on either site (no active
+  international sovereign bond market) -- shown as "-".
+- Ratings: countryeconomy.com ratings overview table (all 9) -- Iran and Iraq
+  are each only rated by one agency (Fitch) there, the other two columns are
+  genuinely blank rather than missing data (see fetch_ratings()).
 
 Sovereign risk is NOT part of this module -- see fetch_cds.py for the real
 5-year CDS spread (a review on 2026-10-29 correctly flagged that this
@@ -37,7 +40,6 @@ TE_BOND_URL = "https://tradingeconomics.com/{te_slug}/government-bond-yield"
 RATINGS_URL = "https://countryeconomy.com/ratings"
 
 PAISES = [
-    ("Francia", "france"),
     ("Alemania", "germany"),
     ("EE.UU.", "usa"),
     ("China", "china"),
@@ -45,6 +47,8 @@ PAISES = [
     ("Colombia", "colombia"),
     ("India", "india"),
     ("Corea del Sur", "south-korea"),
+    ("Iran", "iran"),
+    ("Iraq", "iraq"),
 ]
 
 # Countries whose 10Y yield isn't on countryeconomy.com's overview table or
@@ -98,7 +102,14 @@ def fetch_bond_yields():
 
 
 def fetch_ratings():
-    """Moody's / S&P / Fitch sovereign credit ratings from the overview table."""
+    """Moody's / S&P / Fitch sovereign credit ratings from the overview table.
+
+    Each country's row always has exactly 3 rating <td> cells in that order,
+    but a given cell can be genuinely empty (e.g. Iran and Iraq are each only
+    rated by Fitch -- their Moody's and S&P cells are blank <td></td>, not
+    missing data). Parsed per-cell rather than requiring all 3 to be present,
+    so a partially-rated country still surfaces the rating(s) it does have.
+    """
     html = _fetch_text(RATINGS_URL)
     out = {}
     for _, slug in PAISES:
@@ -108,8 +119,14 @@ def fetch_ratings():
             continue
         row_end = html.find("</tr>", idx)
         row = html[idx:row_end]
-        vals = re.findall(r'class="padleft">\s*([^<]+?)\s*</span>', row)
-        out[slug] = tuple(vals) if len(vals) == 3 else (None, None, None)
+        tds = re.findall(r"<td>(.*?)</td>", row, re.S)
+        vals = []
+        for td in tds[:3]:
+            m = re.search(r'class="padleft">\s*([^<]+?)\s*</span>', td)
+            vals.append(m.group(1) if m else None)
+        while len(vals) < 3:
+            vals.append(None)
+        out[slug] = tuple(vals)
     return out
 
 

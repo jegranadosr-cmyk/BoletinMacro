@@ -1,8 +1,6 @@
 """Compute real GDP growth (CAGR) over 1 and 5 years from the World Bank's
 annual real-GDP series (constant 2015 US$, NY.GDP.MKTP.KD) -- a single
-consistent source and methodology across all regions, including the Euro
-area aggregate (which national statistics offices don't publish directly in
-a comparable way).
+consistent source and methodology across all 9 regions.
 
 CAGR_n = (GDP_latest / GDP_(latest-n)) ** (1/n) - 1
 
@@ -37,8 +35,8 @@ HORIZONS = (1, 5)
 PAISES = [
     ("Colombia", "COL"),
     ("EE.UU.", "USA"),
-    ("Eurozona", "EMU"),
-    ("Francia", "FRA"),
+    ("Iran", "IRN"),
+    ("Iraq", "IRQ"),
     ("Alemania", "DEU"),
     ("India", "IND"),
     ("Corea del Sur", "KOR"),

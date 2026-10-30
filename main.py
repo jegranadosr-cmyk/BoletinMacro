@@ -23,11 +23,11 @@ DIAS_ES = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "dom
 # every table -- a 2026-10-29 review flagged that the country order used to
 # vary from one table to the next).
 REGIONES = [
-    "Colombia", "EE.UU.", "Eurozona", "Francia", "Alemania",
+    "Colombia", "EE.UU.", "Iran", "Iraq", "Alemania",
     "India", "Corea del Sur", "China", "Japón",
 ]
-# Same order, minus Eurozona -- it isn't a sovereign bond/rating issuer.
-REGIONES_SOBERANOS = [p for p in REGIONES if p != "Eurozona"]
+# Las 9 regiones son paises soberanos (ya no incluye el agregado Eurozona).
+REGIONES_SOBERANOS = REGIONES
 
 
 def safe(fn, *args, **kwargs):
@@ -48,24 +48,17 @@ def build_data():
     if err:
         errors.append(f"Growth: {err}")
 
-    # Inflacion / desempleo / balanza comercial / deficit fiscal: paises (sin Eurozona)
+    # Inflacion / desempleo / balanza comercial / deficit fiscal: las 9 regiones
+    # (Iran e Irak via TradingEconomics -- ver fetch_countryeconomy.py, no
+    # estan cubiertos -- o estan desactualizados -- en countryeconomy.com).
     r, err = safe(fce.fetch_macro_indicators)
     macro_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"CountryEconomyMacro: {err}")
 
-    # Eurozona (agregado, via Eurostat): inflacion / desempleo / deficit fiscal
-    r, err = safe(feu.fetch_macro_indicators)
-    if err:
-        errors.append(f"EurostatMacro: {err}")
-        r = {"pais": "Eurozona", "inflacion": None, "desempleo": None,
-             "balanza_comercial_pib": None, "deficit_fiscal_pib": None}
-    macro_by_country["Eurozona"] = r
-
-    # Los paises de la Eurozona (Francia, Alemania) usan HICP (Eurostat) en vez del IPC nacional de
-    # countryeconomy.com, para que sean comparables entre si y con el agregado
-    # Eurozona (que tambien es HICP). El IPC nacional puede diferir varios puntos
-    # del HICP armonizado (ej. Espana).
+    # Alemania (unico pais de la Eurozona en el boletin) usa HICP (Eurostat)
+    # en vez del IPC nacional de countryeconomy.com -- el IPC nacional puede
+    # diferir varios puntos del HICP armonizado.
     for pais in feu.EUROZONE_COUNTRY_GEOS:
         hicp = feu.fetch_hicp_country(pais)
         if hicp is not None:
@@ -105,21 +98,22 @@ def build_data():
     if err:
         errors.append(f"TasasBC: {err}")
 
-    # Deuda/PIB, bono a 10 anos y rating: todos los REGIONES_SOBERANOS (8)
+    # Deuda/PIB, bono a 10 anos y rating: todos los REGIONES_SOBERANOS (9)
     r, err = safe(fdb.fetch_debt_and_bonds)
     deuda_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"DeudaBonos: {err}")
 
     # Tasa de politica monetaria + tasa real ex-post (tasa - inflacion del mismo
-    # pais) para las 9 regiones (incluida la Eurozona misma, que muestra la
-    # tasa del BCE directamente). Francia y Alemania tambien usan la tasa del BCE.
+    # pais) para las 9 regiones. Alemania usa la tasa del BCE (es el unico
+    # pais de la Eurozona en el boletin).
     rate_by_country = {t["pais"]: t for t in data["tasas_bancos_centrales"]}
     inflacion_by_country = {d["pais"]: d.get("inflacion") for d in macro_indicadores}
     RATE_LOOKUP = {
-        "Eurozona": "Eurozona", "Francia": "Eurozona", "Alemania": "Eurozona",
+        "Alemania": "Eurozona",
         "EE.UU.": "EE.UU.", "China": "China", "Japón": "Japón", "Colombia": "Colombia",
         "India": "India", "Corea del Sur": "Corea del Sur",
+        "Iran": "Iran", "Iraq": "Iraq",
     }
     tasas_por_region = {}
     for pais in REGIONES:

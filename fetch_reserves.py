@@ -38,20 +38,21 @@ GAS_WIKI_URL = "https://en.wikipedia.org/wiki/List_of_countries_by_natural_gas_p
 PAISES = [
     ("Colombia", "colombia", "Colombia"),
     ("EE.UU.", "usa", "United States"),
-    ("Francia", "france", "France"),
+    ("Iran", "iran", "Iran"),
+    ("Iraq", "iraq", "Iraq"),
     ("Alemania", "germany", "Germany"),
     ("India", "india", "India"),
     ("Corea del Sur", "south-korea", "South Korea"),
     ("China", "china", "China"),
     ("Japón", "japan", "Japan"),
     ("Brasil", "brazil", "Brazil"),
-    ("México", "mexico", "Mexico"),
     ("Rusia", "russia", "Russia"),
     ("Arabia Saudita", "saudi-arabia", "Saudi Arabia"),
-    ("Nigeria", "nigeria", "Nigeria"),
+    ("Qatar", "qatar", "Qatar"),
     ("Indonesia", "indonesia", "Indonesia"),
     ("Canadá", "canada", "Canada"),
     ("Australia", "australia", "Australia"),
+    ("Kuwait", "kuwait", "Kuwait"),
 ]
 
 

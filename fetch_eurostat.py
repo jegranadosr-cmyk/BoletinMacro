@@ -69,17 +69,18 @@ def fetch_cpi_yoy():
     return val, fecha
 
 
-# ISO2 geo codes for the 4 Eurozone members this bulletin breaks out individually.
+# ISO2 geo codes for the Eurozone member(s) this bulletin breaks out
+# individually (just Germany since the 2026-10-30 country swap -- France,
+# the other former member, was replaced by Iraq).
 EUROZONE_COUNTRY_GEOS = {
-    "Francia": "FR", "Alemania": "DE",
+    "Alemania": "DE",
 }
 
 
 def fetch_hicp_country(pais):
-    """HICP (harmonized, Eurostat) for one Eurozone member -- used instead of
-    countryeconomy.com's national CPI so every Eurozone row is on the same
-    HICP basis as the Eurozona aggregate (national CPI and HICP can diverge
-    by multiple points, e.g. Spain's national CPI vs HICP in Oct 2026)."""
+    """HICP (harmonized, Eurostat) for a Eurozone member -- used instead of
+    countryeconomy.com's national CPI, which can diverge from the harmonized
+    figure by multiple points for some countries."""
     geo = EUROZONE_COUNTRY_GEOS[pais]
     url = f"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_manr?format=JSON&coicop=CP00&geo={geo}&lang=en"
     try:

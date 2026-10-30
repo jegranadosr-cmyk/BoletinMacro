@@ -2,16 +2,17 @@
 international reserves) from the World Bank's public API (no key required).
 
 Verified live (Oct 2026):
-- Current account % GDP: BN.CAB.XOKA.GD.ZS (most countries). Not published
-  for the Euro area aggregate (EMU), so it's derived there from the raw USD
+- Current account % GDP: BN.CAB.XOKA.GD.ZS (most countries). When a country
+  doesn't publish the %GDP figure directly, it's derived from the raw USD
   current account (BN.CAB.XOKA.CD) divided by GDP in USD (NY.GDP.MKTP.CD).
+  Iran has neither figure at all (sanctions-era data gap) -- shown as "-".
 - Capital account, current US$: BN.TRF.KOGT.CD. This is the BPM6 "capital
   account" proper (capital transfers, debt forgiveness, etc.) -- usually a
   very small number, not to be confused with the much larger "financial
   account". Not reported for Colombia.
 - International reserves, current US$: FI.RES.TOTL.CD.
 
-Country codes: COL, USA, EMU (euro area aggregate), FRA, DEU, ITA, ESP, CHN, JPN.
+Country codes: COL, USA, IRN, IRQ, DEU, IND, KOR, CHN, JPN.
 
 CDS (credit default swaps) were investigated but no free, statically
 scrapable source was found: worldgovernmentbonds.com's sovereign-cds pages
@@ -43,8 +44,8 @@ BASE = "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}?for
 PAISES = [
     ("Colombia", "COL"),
     ("EE.UU.", "USA"),
-    ("Eurozona", "EMU"),
-    ("Francia", "FRA"),
+    ("Iran", "IRN"),
+    ("Iraq", "IRQ"),
     ("Alemania", "DEU"),
     ("India", "IND"),
     ("Corea del Sur", "KOR"),
@@ -81,7 +82,7 @@ def fetch_balance_of_payments():
         try:
             ca_pct = _latest(code, "BN.CAB.XOKA.GD.ZS")
             if ca_pct is None:
-                # Euro area aggregate isn't published as %GDP -- derive it.
+                # Some countries don't publish the %GDP figure directly -- derive it.
                 ca_usd = _latest(code, "BN.CAB.XOKA.CD")
                 gdp_usd = _latest(code, "NY.GDP.MKTP.CD")
                 ca_pct = (ca_usd / gdp_usd * 100) if (ca_usd is not None and gdp_usd) else None
