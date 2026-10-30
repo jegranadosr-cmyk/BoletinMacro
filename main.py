@@ -68,6 +68,13 @@ def build_data():
     for pais in REGIONES:
         growth = growth_by_country.get(pais, {})
         macro = macro_by_country.get(pais, {})
+        exportaciones = macro.get("exportaciones_usd")
+        importaciones = macro.get("importaciones_usd")
+        exportaciones_netas = (
+            exportaciones - importaciones
+            if exportaciones is not None and importaciones is not None
+            else None
+        )
         macro_indicadores.append({
             "pais": pais,
             "pib_1a": growth.get("pib_1a"),
@@ -77,8 +84,9 @@ def build_data():
             "desempleo": macro.get("desempleo"),
             "balanza_comercial_pib": macro.get("balanza_comercial_pib"),
             "deficit_fiscal_pib": macro.get("deficit_fiscal_pib"),
-            "exportaciones_usd": macro.get("exportaciones_usd"),
-            "importaciones_usd": macro.get("importaciones_usd"),
+            "exportaciones_usd": exportaciones,
+            "importaciones_usd": importaciones,
+            "exportaciones_netas_usd": exportaciones_netas,
         })
     data["macro_indicadores"] = macro_indicadores
 

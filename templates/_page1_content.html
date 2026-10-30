@@ -22,6 +22,7 @@
       <thead><tr>
         <th>País</th><th class="num">PIB 1A</th><th class="num">PIB 5A</th>
         <th class="num">Inflación</th><th>Tasa BC</th><th class="num">Tasa real</th>
+        <th class="num">Balance Fiscal</th>
       </tr></thead>
       <tbody>
       {% for d in macro_indicadores %}
@@ -33,34 +34,35 @@
           <td class="num">{{ level_pct(d.inflacion) }}</td>
           <td>{{ rc.tasa_label or '-' }}</td>
           <td class="num">{{ pct_span(rc.tasa_real) if rc.tasa_real is defined else '-' }}</td>
+          <td class="num">{{ pct_span(d.deficit_fiscal_pib) }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
     <div class="footnote">
-      PIB 1A/5A: CAGR real (Banco Mundial, dato anual, año {{ pib_anio_ref }} -- no es el último trimestre). Inflación: IPC interanual (HICP para Francia, Alemania, Italia y España). Tasa BC: facilidad de depósito para el BCE. Tasa real = tasa de política - inflación interanual del mismo país (ex-post).
+      PIB 1A/5A: CAGR real (Banco Mundial, dato anual, año {{ pib_anio_ref }} -- no es el último trimestre). Inflación: IPC interanual (HICP para Francia, Alemania, Italia y España). Tasa BC: facilidad de depósito para el BCE. Tasa real = tasa de política - inflación interanual del mismo país (ex-post). Balance fiscal: % del PIB.
     </div>
 
     <table class="boletin-table boletin-table-dense" style="margin-top:22px;">
-      <caption class="caption-lg">Sector externo: balanza comercial, fiscal y comercio exterior</caption>
+      <caption class="caption-lg">Sector externo: balanza comercial y comercio exterior</caption>
       <thead><tr>
-        <th>País</th><th class="num">Bal. Comercial</th><th class="num">Balance Fiscal</th>
-        <th class="num">Exportaciones</th><th class="num">Importaciones</th>
+        <th>País</th><th class="num">Bal. Comercial</th><th class="num">Exportaciones</th>
+        <th class="num">Importaciones</th><th class="num">Exportaciones netas</th>
       </tr></thead>
       <tbody>
       {% for d in macro_indicadores %}
         <tr>
           <td class="name">{{ d.pais }}</td>
           <td class="num">{{ pct_span(d.balanza_comercial_pib) }}</td>
-          <td class="num">{{ pct_span(d.deficit_fiscal_pib) }}</td>
           <td class="num">{{ fmt_usd_billions_plain(d.exportaciones_usd) }}</td>
           <td class="num">{{ fmt_usd_billions_plain(d.importaciones_usd) }}</td>
+          <td class="num">{{ fmt_usd_billions(d.exportaciones_netas_usd) }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
     <div class="footnote">
-      Balanza comercial y balance fiscal: % del PIB. Exportaciones e importaciones de bienes: miles de millones de dólares (US$B).
+      Balanza comercial: % del PIB. Exportaciones, importaciones y exportaciones netas (exportaciones menos importaciones) de bienes: miles de millones de dólares (US$B).
     </div>
 
     <table class="boletin-table boletin-table-dense" style="margin-top:22px;">
