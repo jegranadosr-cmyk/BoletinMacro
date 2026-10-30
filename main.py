@@ -10,6 +10,8 @@ import fetch_growth as fg
 import fetch_rates as fr
 import fetch_debt_bonds as fdb
 import fetch_worldbank as fwb
+import fetch_demographics as fdem
+import fetch_reserves as fres
 import render as rd
 import send_telegram as st
 
@@ -148,6 +150,19 @@ def build_data():
             "rating_fitch": d.get("rating_fitch"),
         })
     data["resumen_coyuntural"] = resumen_coyuntural
+
+    # Pagina 2 (independiente): poblacion, PIB nominal/PPA, PIB per capita,
+    # area y reservas de petroleo/gas. 9 regiones de la pagina 1 + paises que
+    # destacan por poblacion, petroleo, gas o su region.
+    r, err = safe(fdem.fetch_demographics)
+    data["demografia"] = r if not err else []
+    if err:
+        errors.append(f"Demografia: {err}")
+
+    r, err = safe(fres.fetch_reserves)
+    data["reservas_by_pais"] = {d["pais"]: d for d in r} if not err else {}
+    if err:
+        errors.append(f"Reservas: {err}")
 
     data["errors"] = errors
     return data

@@ -77,6 +77,35 @@ def fmt_usd_billions_plain(v):
     return f"${v / 1e9:,.1f}B"
 
 
+def fmt_gdp_scaled(v):
+    """Trillions if large enough, billions otherwise -- GDP ranges from
+    ~$290B (Nigeria) to ~$30T (USA) in this bulletin's country set."""
+    if v is None:
+        return "-"
+    if abs(v) >= 1e12:
+        return f"${v / 1e12:,.2f}T"
+    return f"${v / 1e9:,.1f}B"
+
+
+def fmt_population(v):
+    if v is None:
+        return "-"
+    return f"{v / 1e6:,.1f}M"
+
+
+def fmt_usd_plain(v):
+    """Plain dollar amount with thousands separators, no scaling (GDP per capita)."""
+    if v is None:
+        return "-"
+    return f"${v:,.0f}"
+
+
+def fmt_int_commas(v):
+    if v is None:
+        return "-"
+    return f"{v:,.0f}"
+
+
 def bar_height(v, all_items):
     vals = [abs(i["pct_day"]) for i in all_items if i["pct_day"] is not None]
     max_val = max(vals) if vals else 1
@@ -94,6 +123,10 @@ def _env():
         fmt_big=fmt_big,
         fmt_usd_billions=fmt_usd_billions,
         fmt_usd_billions_plain=fmt_usd_billions_plain,
+        fmt_gdp_scaled=fmt_gdp_scaled,
+        fmt_population=fmt_population,
+        fmt_usd_plain=fmt_usd_plain,
+        fmt_int_commas=fmt_int_commas,
         pct_plain=pct_plain,
         level_pct=level_pct,
         fmt_fx=fmt_fx,
@@ -129,7 +162,7 @@ DEVICE_SCALE = 2
 VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE_HEIGHT_PX // DEVICE_SCALE}
 
 
-def render_bulletin(data, out_dir, pages=("page1.html",)):
+def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
     """Render each page at a fixed 2000x3086px output, every time, so the
     images sent to Telegram are all the same size regardless of content
     length (shorter content leaves white space at the bottom; content taller
