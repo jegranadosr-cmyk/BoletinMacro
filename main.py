@@ -9,11 +9,7 @@ import fetch_eurostat as feu
 import fetch_growth as fg
 import fetch_rates as fr
 import fetch_debt_bonds as fdb
-import fetch_cds as fcds
-import fetch_calendar as fcal
-import fetch_market as fmkt
 import fetch_worldbank as fwb
-import resumen as rs
 import render as rd
 import send_telegram as st
 
@@ -113,14 +109,6 @@ def build_data():
     if err:
         errors.append(f"DeudaBonos: {err}")
 
-    # CDS soberano real a 5 anos (Playwright, worldgovernmentbonds.com) --
-    # reemplaza el antiguo "diferencial de bono vs Bund" mal etiquetado como
-    # riesgo pais (ver fetch_cds.py). Peru no esta cubierto por la fuente.
-    r, err = safe(fcds.fetch_cds_5y)
-    cds_by_country = r if not err else {}
-    if err:
-        errors.append(f"CDS: {err}")
-
     # Tasa de politica monetaria + tasa real ex-post (tasa - inflacion del mismo
     # pais) para las 13 regiones (incluida la Eurozona misma, que muestra la
     # tasa del BCE directamente). Los 4 paises miembro tambien usan la tasa del BCE.
@@ -148,34 +136,19 @@ def build_data():
     data["resumen_coyuntural_by_pais"] = tasas_por_region
 
     # Resumen coyuntural: una fila por pais soberano (sin Eurozona, no es un
-    # emisor soberano) con deuda/PIB, bono a 10 anos, CDS y rating. Mismo
-    # orden (REGIONES_SOBERANOS) que las demas tablas.
+    # emisor soberano) con deuda/PIB, bono a 10 anos y rating. Mismo orden
+    # (REGIONES_SOBERANOS) que las demas tablas.
     resumen_coyuntural = []
     for pais in REGIONES_SOBERANOS:
         d = deuda_by_country.get(pais, {})
         resumen_coyuntural.append({
             "pais": pais, **tasas_por_region[pais],
             "deuda_pib": d.get("deuda_pib"), "bono_10y": d.get("bono_10y"),
-            "cds_5y": cds_by_country.get(pais),
             "rating_moodys": d.get("rating_moodys"),
             "rating_sp": d.get("rating_sp"),
             "rating_fitch": d.get("rating_fitch"),
         })
     data["resumen_coyuntural"] = resumen_coyuntural
-    # Kept for any downstream code that wants the raw per-country dicts.
-    data["deuda_bonos"] = [deuda_by_country[p] for p in REGIONES_SOBERANOS if p in deuda_by_country]
-
-    # Mercados clave: dolar (DXY), EUR/USD, USD/COP, oro, petroleo WTI
-    r, err = safe(fmkt.fetch_mercados_clave)
-    data["mercados_clave"] = r if not err else []
-    if err:
-        errors.append(f"MercadosClave: {err}")
-
-    # Calendario de proximos eventos macro relevantes (Playwright, TradingEconomics)
-    r, err = safe(fcal.fetch_upcoming_events)
-    data["calendario"] = r if not err else []
-    if err:
-        errors.append(f"Calendario: {err}")
 
     data["errors"] = errors
     return data
@@ -199,8 +172,6 @@ def main():
     anios_pib = [d["pib_anio"] for d in data.get("macro_indicadores", []) if d.get("pib_anio")]
     data["pib_anio_ref"] = max(anios_pib) if anios_pib else "n/d"
 
-    data["bullets"] = rs.generate_bullets(data)
-
     with open("data_dump.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2, default=str)
 
@@ -220,7 +191,7 @@ def run(send=True):
         if not token or not chat_id:
             print("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not set, skipping send.", file=sys.stderr)
             return data
-        result = st.send_media_group(token, chat_id, pages)
+        result = st.send_bulletin(token, chat_id, pages)
         print(json.dumps(result, indent=2))
         if not result.get("ok"):
             raise RuntimeError(f"Telegram send failed: {result}")
