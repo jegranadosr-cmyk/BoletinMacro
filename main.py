@@ -9,7 +9,6 @@ import fetch_eurostat as feu
 import fetch_growth as fg
 import fetch_rates as fr
 import fetch_debt_bonds as fdb
-import fetch_worldbank as fwb
 import fetch_demographics as fdem
 import fetch_reserves as fres
 import render as rd
@@ -65,17 +64,10 @@ def build_data():
         else:
             errors.append(f"HICP {pais}: sin dato, se mantiene el IPC nacional")
 
-    # Balanza de pagos: cuenta corriente, cuenta de capital, reservas internacionales (World Bank)
-    r, err = safe(fwb.fetch_balance_of_payments)
-    bop_by_country = {d["pais"]: d for d in r} if not err else {}
-    if err:
-        errors.append(f"WorldBank: {err}")
-
     macro_indicadores = []
     for pais in REGIONES:
         growth = growth_by_country.get(pais, {})
         macro = macro_by_country.get(pais, {})
-        bop = bop_by_country.get(pais, {})
         macro_indicadores.append({
             "pais": pais,
             "pib_1a": growth.get("pib_1a"),
@@ -85,9 +77,8 @@ def build_data():
             "desempleo": macro.get("desempleo"),
             "balanza_comercial_pib": macro.get("balanza_comercial_pib"),
             "deficit_fiscal_pib": macro.get("deficit_fiscal_pib"),
-            "cuenta_corriente_pib": bop.get("cuenta_corriente_pib"),
-            "cuenta_capital_usd": bop.get("cuenta_capital_usd"),
-            "reservas_internacionales_usd": bop.get("reservas_internacionales_usd"),
+            "exportaciones_usd": macro.get("exportaciones_usd"),
+            "importaciones_usd": macro.get("importaciones_usd"),
         })
     data["macro_indicadores"] = macro_indicadores
 

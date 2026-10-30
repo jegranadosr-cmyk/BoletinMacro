@@ -42,10 +42,10 @@
     </div>
 
     <table class="boletin-table boletin-table-dense" style="margin-top:22px;">
-      <caption class="caption-lg">Sector externo: balanza comercial, fiscal y cuenta corriente</caption>
+      <caption class="caption-lg">Sector externo: balanza comercial, fiscal y comercio exterior</caption>
       <thead><tr>
         <th>País</th><th class="num">Bal. Comercial</th><th class="num">Balance Fiscal</th>
-        <th class="num">Cta. Corriente</th><th class="num">Cta. Capital</th>
+        <th class="num">Exportaciones</th><th class="num">Importaciones</th>
       </tr></thead>
       <tbody>
       {% for d in macro_indicadores %}
@@ -53,14 +53,14 @@
           <td class="name">{{ d.pais }}</td>
           <td class="num">{{ pct_span(d.balanza_comercial_pib) }}</td>
           <td class="num">{{ pct_span(d.deficit_fiscal_pib) }}</td>
-          <td class="num">{{ pct_span(d.cuenta_corriente_pib) }}</td>
-          <td class="num">{{ fmt_usd_billions(d.cuenta_capital_usd) }}</td>
+          <td class="num">{{ fmt_usd_billions_plain(d.exportaciones_usd) }}</td>
+          <td class="num">{{ fmt_usd_billions_plain(d.importaciones_usd) }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
     <div class="footnote">
-      Balanza comercial, balance fiscal y cuenta corriente: % del PIB. Cuenta de capital: miles de millones de dólares (US$B).
+      Balanza comercial y balance fiscal: % del PIB. Exportaciones e importaciones de bienes: miles de millones de dólares (US$B).
     </div>
 
     <table class="boletin-table boletin-table-dense" style="margin-top:22px;">

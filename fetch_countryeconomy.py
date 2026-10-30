@@ -11,7 +11,9 @@ Verified against the live tables (Oct 2026):
   unemployment rate.
 - Trade balance: countryeconomy.com/trade/balance -- second plain "numero"
   cell (after the eur/dol export/import/balance triplets and the coverage
-  rate) is "Trade balance % GDP".
+  rate) is "Trade balance % GDP". Exports/imports in current US$ come from
+  the same row's first two class="numero dol" cells (millions, converted to
+  raw USD here).
 - Fiscal deficit: countryeconomy.com/deficit -- plain "numero" cell after the
   eur/dol deficit pair is "Deficit % GDP".
 
@@ -92,6 +94,10 @@ def _plain_numeros(row_html):
     return [val for cls, val in _numeros(row_html) if cls == ""]
 
 
+def _dol_numeros(row_html):
+    return [val for cls, val in _numeros(row_html) if cls == "dol"]
+
+
 def _te_meta_percent(url):
     """First 'N percent' figure in TradingEconomics' meta description -- it's
     consistently the latest actual value (e.g. "decreased to 5.08 percent in
@@ -134,14 +140,24 @@ def fetch_unemployment():
     return out
 
 
-def fetch_trade_balance_pct_gdp():
+def fetch_trade():
+    """Exports, imports (current US$) and trade balance (% GDP) -- one fetch
+    of countryeconomy.com/trade/balance, three figures per country."""
     html = _fetch_text(TRADE_BALANCE_URL)
     out = {}
     for _, slug in PAISES:
         row = _row_html(html, "/trade/balance/", slug)
-        plain = _plain_numeros(row) if row else []
+        if not row:
+            out[slug] = (None, None, None)
+            continue
+        dol = _dol_numeros(row)
+        # dol[0] = exports, dol[1] = imports, dol[2] = balance (all current US$M)
+        exportaciones = dol[0] * 1e6 if len(dol) > 0 else None
+        importaciones = dol[1] * 1e6 if len(dol) > 1 else None
+        plain = _plain_numeros(row)
         # plain[0] = coverage rate, plain[1] = trade balance % GDP
-        out[slug] = plain[1] if len(plain) > 1 else None
+        balanza_pib = plain[1] if len(plain) > 1 else None
+        out[slug] = (exportaciones, importaciones, balanza_pib)
     return out
 
 
@@ -158,15 +174,18 @@ def fetch_deficit_pct_gdp():
 def fetch_macro_indicators():
     cpi = fetch_cpi_yoy()
     unemployment = fetch_unemployment()
-    trade = fetch_trade_balance_pct_gdp()
+    trade = fetch_trade()
     deficit = fetch_deficit_pct_gdp()
     out = []
     for nombre, slug in PAISES:
+        exportaciones, importaciones, balanza_pib = trade.get(slug, (None, None, None))
         out.append({
             "pais": nombre,
             "inflacion": cpi.get(slug),
             "desempleo": unemployment.get(slug),
-            "balanza_comercial_pib": trade.get(slug),
+            "balanza_comercial_pib": balanza_pib,
             "deficit_fiscal_pib": deficit.get(slug),
+            "exportaciones_usd": exportaciones,
+            "importaciones_usd": importaciones,
         })
     return out
