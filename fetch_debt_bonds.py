@@ -1,15 +1,12 @@
 """Fetch government debt-to-GDP, 10-year bond yields and sovereign credit
-ratings for Germany, USA, India, South Korea, China, Japan, Colombia, Iran
-and Iraq. Sources verified against independent reporting (Oct 2026):
-- Debt/GDP: countryeconomy.com national-debt overview table (all 9).
+ratings for Germany, USA, India, South Korea, China, Japan and Colombia.
+Sources verified against independent reporting (Oct 2026):
+- Debt/GDP: countryeconomy.com national-debt overview table (all 7).
 - 10Y yield: countryeconomy.com bonds overview table (Germany/USA/India);
   Colombia has its own countryeconomy.com page; China and South Korea aren't
   tracked there at all, so those come from tradingeconomics.com's live quote
-  span instead. Iran/Iraq aren't tracked on either site (no active
-  international sovereign bond market) -- shown as "-".
-- Ratings: countryeconomy.com ratings overview table (all 9) -- Iran and Iraq
-  are each only rated by one agency (Fitch) there, the other two columns are
-  genuinely blank rather than missing data (see fetch_ratings()).
+  span instead.
+- Ratings: countryeconomy.com ratings overview table (all 7).
 
 Sovereign risk is NOT part of this module -- see fetch_cds.py for the real
 5-year CDS spread (a review on 2026-10-29 correctly flagged that this
@@ -47,8 +44,6 @@ PAISES = [
     ("Colombia", "colombia"),
     ("India", "india"),
     ("Corea del Sur", "south-korea"),
-    ("Iran", "iran"),
-    ("Iraq", "iraq"),
 ]
 
 # Countries whose 10Y yield isn't on countryeconomy.com's overview table or
@@ -105,10 +100,12 @@ def fetch_ratings():
     """Moody's / S&P / Fitch sovereign credit ratings from the overview table.
 
     Each country's row always has exactly 3 rating <td> cells in that order,
-    but a given cell can be genuinely empty (e.g. Iran and Iraq are each only
-    rated by Fitch -- their Moody's and S&P cells are blank <td></td>, not
-    missing data). Parsed per-cell rather than requiring all 3 to be present,
-    so a partially-rated country still surfaces the rating(s) it does have.
+    but a given cell can be genuinely empty for a country rated by fewer than
+    3 agencies (verified against Iran/Iraq, each only rated by Fitch, while
+    this module covered them -- their Moody's/S&P cells were blank <td></td>,
+    not missing data). Parsed per-cell rather than requiring all 3 to be
+    present, so a partially-rated country still surfaces the rating(s) it
+    does have.
     """
     html = _fetch_text(RATINGS_URL)
     out = {}

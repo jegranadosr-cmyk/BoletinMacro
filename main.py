@@ -23,10 +23,10 @@ DIAS_ES = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "dom
 # every table -- a 2026-10-29 review flagged that the country order used to
 # vary from one table to the next).
 REGIONES = [
-    "Colombia", "EE.UU.", "Iran", "Iraq", "Alemania",
+    "Colombia", "EE.UU.", "Alemania",
     "India", "Corea del Sur", "China", "Japón",
 ]
-# Las 9 regiones son paises soberanos (ya no incluye el agregado Eurozona).
+# Las 7 regiones son paises soberanos (ya no incluye el agregado Eurozona).
 REGIONES_SOBERANOS = REGIONES
 
 
@@ -42,15 +42,13 @@ def build_data():
     errors = []
     data = {"fecha": today}
 
-    # Crecimiento del PIB a 1/5/20 anos (CAGR, Banco Mundial) para las 9 regiones
+    # Crecimiento del PIB a 1/5/20 anos (CAGR, Banco Mundial) para las 7 regiones
     r, err = safe(fg.fetch_growth_horizons)
     growth_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"Growth: {err}")
 
-    # Inflacion / desempleo / balanza comercial / deficit fiscal: las 9 regiones
-    # (Iran e Irak via TradingEconomics -- ver fetch_countryeconomy.py, no
-    # estan cubiertos -- o estan desactualizados -- en countryeconomy.com).
+    # Inflacion / desempleo / balanza comercial / deficit fiscal: las 7 regiones
     r, err = safe(fce.fetch_macro_indicators)
     macro_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
@@ -98,14 +96,14 @@ def build_data():
     if err:
         errors.append(f"TasasBC: {err}")
 
-    # Deuda/PIB, bono a 10 anos y rating: todos los REGIONES_SOBERANOS (9)
+    # Deuda/PIB, bono a 10 anos y rating: todos los REGIONES_SOBERANOS (7)
     r, err = safe(fdb.fetch_debt_and_bonds)
     deuda_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"DeudaBonos: {err}")
 
     # Tasa de politica monetaria + tasa real ex-post (tasa - inflacion del mismo
-    # pais) para las 9 regiones. Alemania usa la tasa del BCE (es el unico
+    # pais) para las 7 regiones. Alemania usa la tasa del BCE (es el unico
     # pais de la Eurozona en el boletin).
     rate_by_country = {t["pais"]: t for t in data["tasas_bancos_centrales"]}
     inflacion_by_country = {d["pais"]: d.get("inflacion") for d in macro_indicadores}
@@ -113,7 +111,6 @@ def build_data():
         "Alemania": "Eurozona",
         "EE.UU.": "EE.UU.", "China": "China", "Japón": "Japón", "Colombia": "Colombia",
         "India": "India", "Corea del Sur": "Corea del Sur",
-        "Iran": "Iran", "Iraq": "Iraq",
     }
     tasas_por_region = {}
     for pais in REGIONES:
@@ -146,8 +143,10 @@ def build_data():
     data["resumen_coyuntural"] = resumen_coyuntural
 
     # Pagina 2 (independiente): poblacion, PIB nominal/PPA, PIB per capita,
-    # area y reservas de petroleo/gas. 9 regiones de la pagina 1 + paises que
-    # destacan por poblacion, petroleo, gas o su region.
+    # area y reservas de petroleo/gas. Roster propio (BASE_ROSTER abajo),
+    # independiente de REGIONES/pagina 1 -- a proposito: un pais puede
+    # quitarse de una pagina sin afectar a la otra (pedido explicito del
+    # usuario 2026-10-30 al quitar Iran/Irak solo de pagina 1).
     r, err = safe(fdem.fetch_demographics)
     demografia_by_pais = {d["pais"]: d for d in r} if not err else {}
     if err:
