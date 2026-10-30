@@ -52,7 +52,25 @@ PAISES = [
     # EAU: se agrega a la tabla de poblacion/PIB (sin quitar a Japon) y
     # tambien reemplaza a Japon en la tabla de territorio/reservas.
     ("EAU", "ARE", "United Arab Emirates"),
+    # Kazajistan: se agrega a la tabla de poblacion/PIB (sin quitar a
+    # Alemania) y tambien reemplaza a Alemania en la tabla de
+    # territorio/reservas.
+    ("Kazajistán", "KAZ", "Kazakhstan"),
 ]
+
+# El indicador AG.SRF.TOTL.K2 del Banco Mundial trae un dato de Canada
+# consistentemente erroneo (15,634,410-15,640,500 km2 en toda la serie
+# historica, verificado 2026-10-30) -- un 56% mas grande que el area real de
+# Canada (9,984,670 km2, segun Wikipedia/UN Statistics Division y el
+# consenso de otras fuentes como CIA World Factbook). El resto de paises
+# grandes de este boletin (Rusia, EE.UU., China, Brasil, Australia, India)
+# coinciden con Wikipedia dentro de un margen normal (0-3%, o diferencias de
+# definicion conocidas como la de India con Cachemira) -- Canada es el unico
+# caso con un error real, no una diferencia de convencion. Se sobreescribe
+# con el valor correcto en vez de usar el dato crudo de la API.
+AREA_OVERRIDE_KM2 = {
+    "Canadá": 9984670,
+}
 
 
 def _latest(country, indicator, timeout=25, retries=3):
@@ -104,6 +122,8 @@ def fetch_demographics():
             area_km2 = _latest(code, "AG.SRF.TOTL.K2")
         except Exception:
             area_km2 = None
+        if nombre in AREA_OVERRIDE_KM2:
+            area_km2 = AREA_OVERRIDE_KM2[nombre]
         out.append({
             "pais": nombre,
             "poblacion": poblacion,

@@ -161,12 +161,25 @@ PAGE_HEIGHT_PX = 3086
 DEVICE_SCALE = 2
 VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE_HEIGHT_PX // DEVICE_SCALE}
 
+# Pagina 2 crecio mas alla del presupuesto estandar de VIEWPORT a medida que
+# se le fueron agregando paises -- por pedido explicito del usuario (2026-10-
+# 30) no se vuelve a achicar la letra para que quepa; en su lugar esta pagina
+# usa un lienzo mas alto que las demas. El ancho y el resto del layout
+# (header, tablas, footer) son identicos, solo cambia cuanto alto captura el
+# screenshot.
+PAGE2_HEIGHT_PX = 3220
+PAGE2_VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE2_HEIGHT_PX // DEVICE_SCALE}
+
+_VIEWPORT_BY_TEMPLATE = {"page2.html": PAGE2_VIEWPORT}
+
 
 def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
-    """Render each page at a fixed 2000x3086px output, every time, so the
-    images sent to Telegram are all the same size regardless of content
-    length (shorter content leaves white space at the bottom; content taller
-    than the viewport is cropped rather than resized).
+    """Render each page at a fixed pixel output, every time, so the images
+    sent to Telegram are consistent regardless of content length (shorter
+    content leaves white space at the bottom; content taller than the
+    viewport is cropped rather than resized). Page 2 uses a taller canvas
+    than the rest (see PAGE2_VIEWPORT) since it keeps growing with more
+    countries and the font isn't meant to shrink to compensate.
     """
     os.makedirs(out_dir, exist_ok=True)
 
@@ -176,16 +189,17 @@ def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
         tmp_path = os.path.abspath(os.path.join(out_dir, f"_tmp_page{i}.html"))
         with open(tmp_path, "w", encoding="utf-8") as f:
             f.write(html_str)
-        tmp_paths.append(tmp_path)
+        tmp_paths.append((tmp_path, template_name))
 
     out_paths = []
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
-            for i, tmp_path in enumerate(tmp_paths, start=1):
-                bpage = browser.new_page(viewport=VIEWPORT, device_scale_factor=DEVICE_SCALE)
+            for i, (tmp_path, template_name) in enumerate(tmp_paths, start=1):
+                viewport = _VIEWPORT_BY_TEMPLATE.get(template_name, VIEWPORT)
+                bpage = browser.new_page(viewport=viewport, device_scale_factor=DEVICE_SCALE)
                 bpage.goto("file:///" + tmp_path.replace("\\", "/"))
-                bpage.evaluate(f"document.querySelector('.page').style.minHeight = '{VIEWPORT['height']}px'")
+                bpage.evaluate(f"document.querySelector('.page').style.minHeight = '{viewport['height']}px'")
                 bpage.wait_for_timeout(400)
                 out_path = os.path.join(out_dir, f"page{i}.png")
                 bpage.screenshot(path=out_path)
@@ -193,7 +207,7 @@ def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
                 bpage.close()
             browser.close()
     finally:
-        for tmp_path in tmp_paths:
+        for tmp_path, _ in tmp_paths:
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
 
@@ -201,28 +215,33 @@ def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
 
 
 def render_pdf(data, out_dir, template_name="pdf.html", filename="boletin.pdf"):
-    """Single multi-page PDF (vector text, not a rasterized screenshot) with
-    both pages at the same 1000x1543 CSS px size as the PNGs -- sent
-    alongside the images so recipients have a print-quality copy too. Each
-    page break is forced by the .pdf-sheet CSS rule in pdf.html rather than
-    relying on content height matching the page size exactly."""
+    """Single multi-page PDF (vector text, not a rasterized screenshot) --
+    sent alongside the images so recipients have a print-quality copy too.
+    Each page break is forced by the .pdf-sheet CSS rule in pdf.html rather
+    than relying on content height matching the page size exactly. Uses
+    PAGE2_VIEWPORT's (taller) height uniformly for both pages since
+    Playwright's page.pdf() sets one page size per document -- page 1 ends up
+    with a bit of blank space at the bottom, same as it would if it were
+    simply shorter content on a fixed-size page (already normal elsewhere in
+    this bulletin)."""
     os.makedirs(out_dir, exist_ok=True)
     html_str = render_html(data, template_name)
     tmp_path = os.path.abspath(os.path.join(out_dir, "_tmp_pdf.html"))
     with open(tmp_path, "w", encoding="utf-8") as f:
         f.write(html_str)
 
+    pdf_height = PAGE2_VIEWPORT["height"]
     out_path = os.path.join(out_dir, filename)
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
-            bpage = browser.new_page(viewport={"width": VIEWPORT["width"], "height": VIEWPORT["height"]})
+            bpage = browser.new_page(viewport={"width": VIEWPORT["width"], "height": pdf_height})
             bpage.goto("file:///" + tmp_path.replace("\\", "/"))
             bpage.wait_for_timeout(400)
             bpage.pdf(
                 path=out_path,
                 width=f"{VIEWPORT['width']}px",
-                height=f"{VIEWPORT['height']}px",
+                height=f"{pdf_height}px",
                 print_background=True,
                 margin={"top": "0px", "bottom": "0px", "left": "0px", "right": "0px"},
             )
