@@ -158,22 +158,26 @@ def build_data():
     if err:
         errors.append(f"Reservas: {err}")
 
-    # Tabla "Poblacion, PIB...": los 17 paises de siempre, orden por poblacion
-    # desc (pedido explicito del usuario).
-    POBLACION_ROSTER = [
+    # Roster base (17 paises) para ambas tablas de pagina 2.
+    BASE_ROSTER = [
         "Colombia", "EE.UU.", "Iran", "Iraq", "Alemania", "India", "Corea del Sur",
         "China", "Japón", "Brasil", "Rusia", "Arabia Saudita", "Qatar", "Indonesia",
         "Canadá", "Australia", "Kuwait",
     ]
+
+    # Tabla "Poblacion, PIB...": el roster base + EAU (sin quitar a Japon),
+    # orden por poblacion desc (pedido explicito del usuario).
+    POBLACION_ROSTER = BASE_ROSTER + ["EAU"]
     data["demografia_poblacion"] = sorted(
         (demografia_by_pais[p] for p in POBLACION_ROSTER if p in demografia_by_pais),
         key=lambda d: (d["poblacion"] is None, -(d["poblacion"] or 0)),
     )
 
-    # Tabla "Territorio y reservas": los mismos 17, pero Corea del Sur
-    # reemplazada por Venezuela (pedido explicito del usuario), orden por
-    # area desc.
-    AREA_ROSTER = ["Venezuela" if p == "Corea del Sur" else p for p in POBLACION_ROSTER]
+    # Tabla "Territorio y reservas": el roster base, pero Corea del Sur
+    # reemplazada por Venezuela y Japon reemplazado por EAU (pedido
+    # explicito del usuario), orden por area desc.
+    AREA_SUB = {"Corea del Sur": "Venezuela", "Japón": "EAU"}
+    AREA_ROSTER = [AREA_SUB.get(p, p) for p in BASE_ROSTER]
     data["demografia_area"] = sorted(
         (demografia_by_pais[p] for p in AREA_ROSTER if p in demografia_by_pais),
         key=lambda d: (d["area_km2"] is None, -(d["area_km2"] or 0)),

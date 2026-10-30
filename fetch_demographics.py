@@ -49,6 +49,9 @@ PAISES = [
     # ahi, pedido explicito del usuario) -- no aparece en la tabla de
     # poblacion/PIB, que conserva a Corea del Sur.
     ("Venezuela", "VEN", "Venezuela"),
+    # EAU: se agrega a la tabla de poblacion/PIB (sin quitar a Japon) y
+    # tambien reemplaza a Japon en la tabla de territorio/reservas.
+    ("EAU", "ARE", "United Arab Emirates"),
 ]
 
 

@@ -43,7 +43,6 @@ PAISES = [
     ("Alemania", "germany", "Germany"),
     ("India", "india", "India"),
     ("China", "china", "China"),
-    ("Japón", "japan", "Japan"),
     ("Brasil", "brazil", "Brazil"),
     ("Rusia", "russia", "Russia"),
     ("Arabia Saudita", "saudi-arabia", "Saudi Arabia"),
@@ -55,6 +54,9 @@ PAISES = [
     # Reemplaza a Corea del Sur en la tabla de territorio/reservas (pedido
     # explicito del usuario) -- Corea del Sur sigue en la tabla de poblacion/PIB.
     ("Venezuela", "venezuela", "Venezuela"),
+    # Reemplaza a Japon en la tabla de territorio/reservas (pedido explicito
+    # del usuario) -- Japon sigue en la tabla de poblacion/PIB.
+    ("EAU", "united-arab-emirates", "United Arab Emirates"),
 ]
 
 
