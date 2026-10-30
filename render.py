@@ -124,13 +124,13 @@ def render_html(data, template_name):
 
 
 PAGE_WIDTH_PX = 2000
-PAGE_HEIGHT_PX = 2940
+PAGE_HEIGHT_PX = 3086
 DEVICE_SCALE = 2
 VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE_HEIGHT_PX // DEVICE_SCALE}
 
 
 def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
-    """Render each page at a fixed 2000x2940px output, every time, so the
+    """Render each page at a fixed 2000x3086px output, every time, so the
     images sent to Telegram are all the same size regardless of content
     length (shorter content leaves white space at the bottom; content taller
     than the viewport is cropped rather than resized).
