@@ -56,6 +56,12 @@ PAISES = [
     # Alemania) y tambien reemplaza a Alemania en la tabla de
     # territorio/reservas.
     ("Kazajistán", "KAZ", "Kazakhstan"),
+    # Turkmenistan/Nigeria/Libia: solo para la tabla de territorio/reservas
+    # (pedido explicito del usuario) -- no aparecen en la tabla de
+    # poblacion/PIB.
+    ("Turkmenistán", "TKM", "Turkmenistan"),
+    ("Nigeria", "NGA", "Nigeria"),
+    ("Libia", "LBY", "Libya"),
 ]
 
 # El indicador AG.SRF.TOTL.K2 del Banco Mundial trae un dato de Canada

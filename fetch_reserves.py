@@ -59,6 +59,11 @@ PAISES = [
     # Reemplaza a Alemania en la tabla de territorio/reservas (pedido
     # explicito del usuario) -- Alemania sigue en la tabla de poblacion/PIB.
     ("Kazajistán", "kazakhstan", "Kazakhstan"),
+    # Agregados solo a la tabla de territorio/reservas (pedido explicito del
+    # usuario) -- no aparecen en la tabla de poblacion/PIB.
+    ("Turkmenistán", "turkmenistan", "Turkmenistan"),
+    ("Nigeria", "nigeria", "Nigeria"),
+    ("Libia", "libya", "Libya"),
 ]
 
 

@@ -193,10 +193,11 @@ def build_data():
 
     # Tabla "Territorio y reservas": el roster base, pero Corea del Sur
     # reemplazada por Venezuela, Japon reemplazado por EAU y Alemania
-    # reemplazada por Kazajistan (pedido explicito del usuario), orden por
-    # area desc.
+    # reemplazada por Kazajistan, mas Turkmenistan/Nigeria/Libia agregados
+    # sin reemplazar a nadie (todo pedido explicito del usuario) -- ninguno
+    # de estos 3 aparece en la tabla de poblacion/PIB. Orden por area desc.
     AREA_SUB = {"Corea del Sur": "Venezuela", "Japón": "EAU", "Alemania": "Kazajistán"}
-    AREA_ROSTER = [AREA_SUB.get(p, p) for p in BASE_ROSTER]
+    AREA_ROSTER = [AREA_SUB.get(p, p) for p in BASE_ROSTER] + ["Turkmenistán", "Nigeria", "Libia"]
     data["demografia_area"] = sorted(
         (demografia_by_pais[p] for p in AREA_ROSTER if p in demografia_by_pais),
         key=lambda d: (d["area_km2"] is None, -(d["area_km2"] or 0)),
