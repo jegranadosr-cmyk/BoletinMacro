@@ -8,7 +8,6 @@ import fetch_countryeconomy as fce
 import fetch_eurostat as feu
 import fetch_growth as fg
 import fetch_rates as fr
-import fetch_debt_bonds as fdb
 import fetch_demographics as fdem
 import fetch_reserves as fres
 import fetch_informality as finf
@@ -35,10 +34,6 @@ REGIONES = [
 # existen a nivel Reino Unido, asi que no hay una version "solo Inglaterra"
 # de la mayoria de estas cifras para usar en su lugar.
 # Las 13 regiones son paises soberanos (ya no incluye el agregado Eurozona).
-# Bangladesh se excluye solo de "Fiscal y riesgo soberano" (pedido explicito
-# del usuario 2026-11-01) -- sigue en las otras 2 tablas de pagina 1, via
-# REGIONES.
-REGIONES_SOBERANOS = [p for p in REGIONES if p != "Bangladesh"]
 
 
 def safe(fn, *args, **kwargs):
@@ -149,12 +144,6 @@ def build_data():
     if err:
         errors.append(f"TasasBC: {err}")
 
-    # Deuda/PIB, bono a 10 anos y rating: todos los REGIONES_SOBERANOS (13)
-    r, err = safe(fdb.fetch_debt_and_bonds)
-    deuda_by_country = {d["pais"]: d for d in r} if not err else {}
-    if err:
-        errors.append(f"DeudaBonos: {err}")
-
     # Tasa de politica monetaria + tasa real ex-post (tasa - inflacion del mismo
     # pais) para las 13 regiones. Francia/Alemania/Italia/Espana usan la tasa
     # del BCE (todas comparten la Eurozona en este boletin).
@@ -180,21 +169,6 @@ def build_data():
         tasa_real = (rate["tasa"] - inflacion_pais) if (rate and rate["tasa"] is not None and inflacion_pais is not None) else None
         tasas_por_region[pais] = {"tasa_label": tasa_label, "tasa_real": tasa_real}
     data["resumen_coyuntural_by_pais"] = tasas_por_region
-
-    # Resumen coyuntural: una fila por pais soberano (sin Eurozona, no es un
-    # emisor soberano) con deuda/PIB, bono a 10 anos y rating. Mismo orden
-    # (REGIONES_SOBERANOS) que las demas tablas.
-    resumen_coyuntural = []
-    for pais in REGIONES_SOBERANOS:
-        d = deuda_by_country.get(pais, {})
-        resumen_coyuntural.append({
-            "pais": pais, **tasas_por_region[pais],
-            "deuda_pib": d.get("deuda_pib"), "bono_10y": d.get("bono_10y"),
-            "rating_moodys": d.get("rating_moodys"),
-            "rating_sp": d.get("rating_sp"),
-            "rating_fitch": d.get("rating_fitch"),
-        })
-    data["resumen_coyuntural"] = resumen_coyuntural
 
     # Pagina 2 (independiente): poblacion, PIB nominal/PPA, PIB per capita,
     # area y reservas de petroleo/gas. Roster propio (BASE_ROSTER abajo),

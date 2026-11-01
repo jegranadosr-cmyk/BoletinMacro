@@ -17,7 +17,7 @@
   </div>
 
   <div class="content">
-    <table class="boletin-table boletin-table-dense">
+    <table class="boletin-table boletin-table-hero">
       <caption class="caption-lg">Crecimiento, inflación y tasas de política monetaria</caption>
       <thead><tr>
         <th>País</th><th class="num">PIB 1A</th>
@@ -40,7 +40,7 @@
       </tbody>
     </table>
 
-    <table class="boletin-table boletin-table-dense" style="margin-top:22px;">
+    <table class="boletin-table boletin-table-hero" style="margin-top:22px;">
       <caption class="caption-lg">Sector externo: balanza comercial y comercio exterior</caption>
       <thead><tr>
         <th>País</th><th class="num">Bal. Comercial</th><th class="num">Exportaciones</th>
@@ -54,26 +54,6 @@
           <td class="num">{{ fmt_usd_billions_plain(d.exportaciones_usd) }}</td>
           <td class="num">{{ fmt_usd_billions_plain(d.importaciones_usd) }}</td>
           <td class="num">{{ fmt_usd_billions(d.exportaciones_netas_usd) }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-
-    <table class="boletin-table boletin-table-dense" style="margin-top:22px;">
-      <caption class="caption-lg">Fiscal y riesgo soberano: deuda, bono 10A y calificación</caption>
-      <thead><tr>
-        <th>País</th><th class="num">Deuda/PIB</th><th class="num">Bono 10A</th>
-        <th class="num">Moody's</th><th class="num">S&amp;P</th><th class="num">Fitch</th>
-      </tr></thead>
-      <tbody>
-      {% for d in resumen_coyuntural %}
-        <tr>
-          <td class="name">{{ d.pais }}</td>
-          <td class="num">{{ level_pct(d.deuda_pib) }}</td>
-          <td class="num">{{ level_pct(d.bono_10y) }}</td>
-          <td class="num">{{ d.rating_moodys or '-' }}</td>
-          <td class="num">{{ d.rating_sp or '-' }}</td>
-          <td class="num">{{ d.rating_fitch or '-' }}</td>
         </tr>
       {% endfor %}
       </tbody>
