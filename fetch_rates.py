@@ -165,9 +165,13 @@ def fetch_vietnam():
     return _simple_rate("Vietnam", "vietnam", "SBV")
 
 
+def fetch_bangladesh():
+    return _simple_rate("Bangladesh", "bangladesh", "BB")
+
+
 def fetch_policy_rates():
     fetchers = [fetch_ecb, fetch_fed, fetch_china, fetch_boj, fetch_colombia,
-                fetch_india, fetch_south_korea, fetch_uk, fetch_vietnam]
+                fetch_india, fetch_south_korea, fetch_uk, fetch_vietnam, fetch_bangladesh]
     out = []
     for fn in fetchers:
         try:

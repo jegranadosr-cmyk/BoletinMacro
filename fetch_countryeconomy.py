@@ -17,9 +17,9 @@ Verified against the live tables (Oct 2026):
 - Fiscal deficit: countryeconomy.com/deficit -- plain "numero" cell after the
   eur/dol deficit pair is "Deficit % GDP".
 
-Vietnam: covered for trade balance and fiscal deficit on the regular overview
-tables, but NOT for CPI or unemployment -- those two come from
-TradingEconomics' per-indicator page meta description instead (plain
+Vietnam/Bangladesh: covered for trade balance and fiscal deficit on the
+regular overview tables, but NOT for CPI or unemployment -- those two come
+from TradingEconomics' per-indicator page meta description instead (plain
 server-rendered HTML, no JS needed), same trick used elsewhere in this
 bulletin (bond yields in fetch_debt_bonds.py, etc).
 """
@@ -58,11 +58,12 @@ PAISES = [
     ("China", "china"),
     ("Japón", "japan"),
     ("Vietnam", "vietnam"),
+    ("Bangladesh", "bangladesh"),
 ]
 
 # CPI/unemployment not reliably available on countryeconomy.com for these --
 # read from TradingEconomics instead (see module docstring).
-TE_FALLBACK_SLUGS = {"vietnam"}
+TE_FALLBACK_SLUGS = {"vietnam", "bangladesh"}
 
 
 def _fetch_text(url, timeout=20):

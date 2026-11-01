@@ -167,7 +167,7 @@ VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE_HEIGHT_PX // 
 # para que quepa; en su lugar cada pagina usa el lienzo mas alto que
 # necesite. El ancho y el resto del layout (header, tablas, footer) son
 # identicos entre paginas, solo cambia cuanto alto captura el screenshot.
-PAGE1_HEIGHT_PX = 3820
+PAGE1_HEIGHT_PX = 3960
 PAGE1_VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE1_HEIGHT_PX // DEVICE_SCALE}
 PAGE2_HEIGHT_PX = 3220
 PAGE2_VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE2_HEIGHT_PX // DEVICE_SCALE}

@@ -1,6 +1,6 @@
 """Compute real GDP growth (CAGR) over 1 and 5 years from the World Bank's
 annual real-GDP series (constant 2015 US$, NY.GDP.MKTP.KD) -- a single
-consistent source and methodology across all 12 regions.
+consistent source and methodology across all 13 regions.
 
 CAGR_n = (GDP_latest / GDP_(latest-n)) ** (1/n) - 1
 
@@ -45,6 +45,7 @@ PAISES = [
     ("China", "CHN"),
     ("Japón", "JPN"),
     ("Vietnam", "VNM"),
+    ("Bangladesh", "BGD"),
 ]
 
 

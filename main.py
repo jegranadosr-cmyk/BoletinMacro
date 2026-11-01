@@ -11,6 +11,7 @@ import fetch_rates as fr
 import fetch_debt_bonds as fdb
 import fetch_demographics as fdem
 import fetch_reserves as fres
+import fetch_informality as finf
 import render as rd
 import send_telegram as st
 
@@ -20,12 +21,13 @@ DIAS_ES = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "dom
 
 # Canonical region order used across every table in the bulletin (same order,
 # every table -- a 2026-10-29 review flagged that the country order used to
-# vary from one table to the next).
+# vary from one table to the next). Alphabetical, pedido explicito del
+# usuario 2026-11-01.
 REGIONES = [
-    "Colombia", "EE.UU.", "Reino Unido", "Francia", "Alemania", "Italia", "España",
-    "India", "Corea del Sur", "China", "Japón", "Vietnam",
+    "Alemania", "Bangladesh", "China", "Colombia", "Corea del Sur", "EE.UU.",
+    "España", "Francia", "India", "Italia", "Japón", "Reino Unido", "Vietnam",
 ]
-# Las 12 regiones son paises soberanos (ya no incluye el agregado Eurozona).
+# Las 13 regiones son paises soberanos (ya no incluye el agregado Eurozona).
 REGIONES_SOBERANOS = REGIONES
 
 
@@ -41,13 +43,13 @@ def build_data():
     errors = []
     data = {"fecha": today}
 
-    # Crecimiento del PIB a 1/5/20 anos (CAGR, Banco Mundial) para las 12 regiones
+    # Crecimiento del PIB a 1/5/20 anos (CAGR, Banco Mundial) para las 13 regiones
     r, err = safe(fg.fetch_growth_horizons)
     growth_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"Growth: {err}")
 
-    # Inflacion / desempleo / balanza comercial / deficit fiscal: las 12 regiones
+    # Inflacion / desempleo / balanza comercial / deficit fiscal: las 13 regiones
     r, err = safe(fce.fetch_macro_indicators)
     macro_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
@@ -63,6 +65,13 @@ def build_data():
             macro_by_country.setdefault(pais, {})["inflacion"] = hicp
         else:
             errors.append(f"HICP {pais}: sin dato, se mantiene el IPC nacional")
+
+    # Tasa de informalidad laboral (ILOSTAT) -- sin cobertura para EE.UU.,
+    # China y Japon (no reportan este indicador en una serie comparable).
+    r, err = safe(finf.fetch_informalidad)
+    informalidad_by_country = {d["pais"]: d.get("informalidad_pct") for d in r} if not err else {}
+    if err:
+        errors.append(f"Informalidad: {err}")
 
     macro_indicadores = []
     for pais in REGIONES:
@@ -87,6 +96,7 @@ def build_data():
             "exportaciones_usd": exportaciones,
             "importaciones_usd": importaciones,
             "exportaciones_netas_usd": exportaciones_netas,
+            "informalidad_pct": informalidad_by_country.get(pais),
         })
     data["macro_indicadores"] = macro_indicadores
 
@@ -96,14 +106,14 @@ def build_data():
     if err:
         errors.append(f"TasasBC: {err}")
 
-    # Deuda/PIB, bono a 10 anos y rating: todos los REGIONES_SOBERANOS (12)
+    # Deuda/PIB, bono a 10 anos y rating: todos los REGIONES_SOBERANOS (13)
     r, err = safe(fdb.fetch_debt_and_bonds)
     deuda_by_country = {d["pais"]: d for d in r} if not err else {}
     if err:
         errors.append(f"DeudaBonos: {err}")
 
     # Tasa de politica monetaria + tasa real ex-post (tasa - inflacion del mismo
-    # pais) para las 12 regiones. Francia/Alemania/Italia/Espana usan la tasa
+    # pais) para las 13 regiones. Francia/Alemania/Italia/Espana usan la tasa
     # del BCE (todas comparten la Eurozona en este boletin).
     rate_by_country = {t["pais"]: t for t in data["tasas_bancos_centrales"]}
     inflacion_by_country = {d["pais"]: d.get("inflacion") for d in macro_indicadores}
@@ -111,13 +121,13 @@ def build_data():
         "Francia": "Eurozona", "Alemania": "Eurozona", "Italia": "Eurozona", "España": "Eurozona",
         "EE.UU.": "EE.UU.", "China": "China", "Japón": "Japón", "Colombia": "Colombia",
         "India": "India", "Corea del Sur": "Corea del Sur",
-        "Reino Unido": "Reino Unido", "Vietnam": "Vietnam",
+        "Reino Unido": "Reino Unido", "Vietnam": "Vietnam", "Bangladesh": "Bangladesh",
     }
     tasas_por_region = {}
     for pais in REGIONES:
         rate = rate_by_country.get(RATE_LOOKUP.get(pais))
         if rate and rate["tasa"] is not None:
-            tasa_label = f"{rate['tasa_label']} ({rate['banco']})"
+            tasa_label = rate["tasa_label"]
         else:
             tasa_label = "-"
         inflacion_pais = inflacion_by_country.get(pais)

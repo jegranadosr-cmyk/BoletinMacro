@@ -1,13 +1,15 @@
 """Fetch government debt-to-GDP, 10-year bond yields and sovereign credit
 ratings for the UK, France, Germany, Italy, Spain, USA, India, South Korea,
-China, Japan, Colombia and Vietnam. Sources verified against independent
-reporting (Oct 2026):
-- Debt/GDP: countryeconomy.com national-debt overview table (all 12).
+China, Japan, Colombia, Vietnam and Bangladesh. Sources verified against
+independent reporting (Oct 2026):
+- Debt/GDP: countryeconomy.com national-debt overview table (all 13).
 - 10Y yield: countryeconomy.com bonds overview table (UK/France/Germany/
   Italy/Spain/USA/India); Colombia has its own countryeconomy.com page;
   China, South Korea and Vietnam aren't tracked there at all, so those come
-  from tradingeconomics.com's live quote span instead.
-- Ratings: countryeconomy.com ratings overview table (all 12).
+  from tradingeconomics.com's live quote span instead. Bangladesh isn't
+  tracked on either site (no comparable sovereign bond market data
+  available there) -- shown as "-".
+- Ratings: countryeconomy.com ratings overview table (all 13).
 
 Sovereign risk is NOT part of this module -- see fetch_cds.py for the real
 5-year CDS spread (a review on 2026-10-29 correctly flagged that this
@@ -50,6 +52,7 @@ PAISES = [
     ("India", "india"),
     ("Corea del Sur", "south-korea"),
     ("Vietnam", "vietnam"),
+    ("Bangladesh", "bangladesh"),
 ]
 
 # Countries whose 10Y yield isn't on countryeconomy.com's overview table or
