@@ -97,12 +97,14 @@ table.boletin-table thead th {
   border-bottom: 1px solid var(--gray-border);
 }
 table.boletin-table thead th.num { text-align: right; }
+table.boletin-table thead th.ctr { text-align: center; }
 table.boletin-table tbody td {
   padding: 8px 10px;
   border-bottom: 1px solid #f0f0f0;
 }
 table.boletin-table tbody tr:nth-child(even) { background: #fafafa; }
 table.boletin-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.boletin-table td.ctr { text-align: center; }
 table.boletin-table td.name { font-weight: 700; }
 table.boletin-table td.sub { color: var(--text-muted); font-size: 11.5px; }
 
@@ -113,10 +115,10 @@ table.boletin-table-hero thead th { font-size: 12.5px; padding: 14px 10px 11px; 
 table.boletin-table-hero tbody td { padding: 16px 10px; }
 
 /* denser variant for wide tables (5-6 columns, 8-9 rows) on the 1-page layout */
-table.boletin-table-dense { font-size: 13px; }
-table.boletin-table-dense caption.caption-lg { font-size: 16px; padding: 9px 0; }
-table.boletin-table-dense thead th { font-size: 10.5px; padding: 8px 6px 6px; }
-table.boletin-table-dense tbody td { padding: 7.5px 6px; }
+table.boletin-table-dense { font-size: 13.5px; }
+table.boletin-table-dense caption.caption-lg { font-size: 16.5px; padding: 9.5px 0; }
+table.boletin-table-dense thead th { font-size: 11px; padding: 8.5px 6px 6.5px; }
+table.boletin-table-dense tbody td { padding: 8px 6px; }
 
 /* page2 variant (17-row tables, but no footnotes and more vertical room) */
 table.boletin-table-dense2 { font-size: 14px; }

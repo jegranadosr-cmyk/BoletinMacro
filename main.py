@@ -35,7 +35,10 @@ REGIONES = [
 # existen a nivel Reino Unido, asi que no hay una version "solo Inglaterra"
 # de la mayoria de estas cifras para usar en su lugar.
 # Las 13 regiones son paises soberanos (ya no incluye el agregado Eurozona).
-REGIONES_SOBERANOS = REGIONES
+# Bangladesh se excluye solo de "Fiscal y riesgo soberano" (pedido explicito
+# del usuario 2026-11-01) -- sigue en las otras 2 tablas de pagina 1, via
+# REGIONES.
+REGIONES_SOBERANOS = [p for p in REGIONES if p != "Bangladesh"]
 
 
 def safe(fn, *args, **kwargs):
@@ -43,6 +46,12 @@ def safe(fn, *args, **kwargs):
         return fn(*args, **kwargs), None
     except Exception as e:
         return None, f"{type(e).__name__}: {e}"
+
+
+def _exportaciones_netas(exportaciones, importaciones):
+    if exportaciones is None or importaciones is None:
+        return None
+    return exportaciones - importaciones
 
 
 def build_data():
@@ -86,11 +95,6 @@ def build_data():
         macro = macro_by_country.get(pais, {})
         exportaciones = macro.get("exportaciones_usd")
         importaciones = macro.get("importaciones_usd")
-        exportaciones_netas = (
-            exportaciones - importaciones
-            if exportaciones is not None and importaciones is not None
-            else None
-        )
         macro_indicadores.append({
             "pais": pais,
             "pib_1a": growth.get("pib_1a"),
@@ -102,10 +106,42 @@ def build_data():
             "deficit_fiscal_pib": macro.get("deficit_fiscal_pib"),
             "exportaciones_usd": exportaciones,
             "importaciones_usd": importaciones,
-            "exportaciones_netas_usd": exportaciones_netas,
+            "exportaciones_netas_usd": _exportaciones_netas(exportaciones, importaciones),
             "informalidad_pct": informalidad_by_country.get(pais),
         })
     data["macro_indicadores"] = macro_indicadores
+
+    # Tabla "Sector externo" (pagina 1): las 13 regiones de siempre, mas
+    # Indonesia/Tailandia/Camboya/Filipinas (pedido explicito del usuario
+    # 2026-11-01) -- estos 4 solo aparecen aqui, no en las otras 2 tablas
+    # de pagina 1. Orden alfabetico, igual que el resto de pagina 1.
+    r, err = safe(fce.fetch_sector_externo_extra)
+    sector_externo_extra = r if not err else []
+    if err:
+        errors.append(f"SectorExternoExtra: {err}")
+
+    sector_externo = [
+        {
+            "pais": d["pais"],
+            "balanza_comercial_pib": d["balanza_comercial_pib"],
+            "exportaciones_usd": d["exportaciones_usd"],
+            "importaciones_usd": d["importaciones_usd"],
+            "exportaciones_netas_usd": d["exportaciones_netas_usd"],
+        }
+        for d in macro_indicadores
+    ]
+    for d in sector_externo_extra:
+        exportaciones = d.get("exportaciones_usd")
+        importaciones = d.get("importaciones_usd")
+        sector_externo.append({
+            "pais": d["pais"],
+            "balanza_comercial_pib": d.get("balanza_comercial_pib"),
+            "exportaciones_usd": exportaciones,
+            "importaciones_usd": importaciones,
+            "exportaciones_netas_usd": _exportaciones_netas(exportaciones, importaciones),
+        })
+    sector_externo.sort(key=lambda d: d["pais"].casefold())
+    data["sector_externo"] = sector_externo
 
     # Tasas de politica monetaria (bancos centrales)
     r, err = safe(fr.fetch_policy_rates)

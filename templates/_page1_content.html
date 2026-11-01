@@ -21,7 +21,7 @@
       <caption class="caption-lg">Crecimiento, inflación y tasas de política monetaria</caption>
       <thead><tr>
         <th>País</th><th class="num">PIB 1A</th>
-        <th class="num">Inflación</th><th>Tasa BC</th><th class="num">Tasa real</th>
+        <th class="num">Inflación</th><th class="ctr">Tasa BC</th><th class="num">Tasa real</th>
         <th class="num">Balance Fiscal</th><th class="num">Informalidad</th>
       </tr></thead>
       <tbody>
@@ -31,7 +31,7 @@
           <td class="name">{{ d.pais }}</td>
           <td class="num">{{ pct_span(d.pib_1a) }}</td>
           <td class="num">{{ level_pct(d.inflacion) }}</td>
-          <td>{{ rc.tasa_label or '-' }}</td>
+          <td class="ctr">{{ rc.tasa_label or '-' }}</td>
           <td class="num">{{ pct_span(rc.tasa_real) if rc.tasa_real is defined else '-' }}</td>
           <td class="num">{{ pct_span(d.deficit_fiscal_pib) }}</td>
           <td class="num">{{ level_pct(d.informalidad_pct) }}</td>
@@ -39,9 +39,6 @@
       {% endfor %}
       </tbody>
     </table>
-    <div class="footnote">
-      PIB 1A: CAGR real (Banco Mundial, dato anual, año {{ pib_anio_ref }} -- no es el último trimestre). Inflación: IPC interanual (HICP para Francia, Alemania, Italia y España). "Inglaterra" usa datos del Reino Unido completo (Banco de Inglaterra, bono y calificación soberanos, comercio exterior) -- Inglaterra no tiene banco central, deuda soberana ni comercio exterior propios y separados del resto del Reino Unido. Tasa BC: facilidad de depósito para el BCE. Tasa real = tasa de política - inflación interanual del mismo país (ex-post). Balance fiscal: % del PIB. Informalidad: empleo informal como % del empleo total (indicador ODS 8.3.1, vía Our World in Data/ILO) -- sin dato para EE.UU., China y Japón (no lo reportan en una serie comparable).
-    </div>
 
     <table class="boletin-table boletin-table-dense" style="margin-top:22px;">
       <caption class="caption-lg">Sector externo: balanza comercial y comercio exterior</caption>
@@ -50,7 +47,7 @@
         <th class="num">Importaciones</th><th class="num">Exportaciones netas</th>
       </tr></thead>
       <tbody>
-      {% for d in macro_indicadores %}
+      {% for d in sector_externo %}
         <tr>
           <td class="name">{{ d.pais }}</td>
           <td class="num">{{ pct_span(d.balanza_comercial_pib) }}</td>
@@ -61,9 +58,6 @@
       {% endfor %}
       </tbody>
     </table>
-    <div class="footnote">
-      Balanza comercial: % del PIB. Exportaciones, importaciones y exportaciones netas (exportaciones menos importaciones) de bienes: miles de millones de dólares (US$B).
-    </div>
 
     <table class="boletin-table boletin-table-dense" style="margin-top:22px;">
       <caption class="caption-lg">Fiscal y riesgo soberano: deuda, bono 10A y calificación</caption>
@@ -84,9 +78,6 @@
       {% endfor %}
       </tbody>
     </table>
-    <div class="footnote">
-      Calificación crediticia soberana de largo plazo en moneda extranjera. Fitch Vietnam: la fuente primaria muestra "BB", posiblemente desactualizado (Fitch afirmó "BB+" en jun-2025) -- no se corrige a mano en un pipeline automático, ver fetch_debt_bonds.py.
-    </div>
 
     {% if show_team is not defined or show_team %}
     <div class="section-title" style="font-size:15px; color:#1fa75c; margin-top:18px;">EQUIPO RESPONSABLE</div>

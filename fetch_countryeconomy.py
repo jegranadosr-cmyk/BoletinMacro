@@ -28,6 +28,13 @@ countryeconomy.com, but NOT for unemployment (checked directly against the
 overview table) -- unemployment for these three also comes from the
 TradingEconomics fallback, same mechanism, independent of the CPI fallback
 set since these three don't need it for CPI.
+
+Indonesia/Thailand/Cambodia/Philippines (added 2026-11-01): only used for
+page 1's "Sector externo" table (pedido explicito del usuario), not the
+other two page-1 tables, so only trade balance/exports/imports are fetched
+for them (see SECTOR_EXTERNO_EXTRA/fetch_sector_externo_extra()) -- no CPI,
+unemployment, deficit or growth, since none of that is displayed for them.
+All 4 confirmed covered on countryeconomy.com/trade/balance.
 """
 import re
 import socket
@@ -74,6 +81,15 @@ TE_CPI_FALLBACK_SLUGS = {"vietnam", "bangladesh"}
 # Unemployment not reliably available on countryeconomy.com for these --
 # read from TradingEconomics instead (see module docstring).
 TE_UNEMPLOYMENT_FALLBACK_SLUGS = {"vietnam", "bangladesh", "china", "south-korea", "india"}
+
+# Only need trade balance/exports/imports (Sector Externo table, page 1) --
+# see module docstring.
+SECTOR_EXTERNO_EXTRA = [
+    ("Indonesia", "indonesia"),
+    ("Tailandia", "thailand"),
+    ("Camboya", "cambodia"),
+    ("Filipinas", "philippines"),
+]
 
 
 def _fetch_text(url, timeout=20):
@@ -153,10 +169,12 @@ def fetch_unemployment():
 
 def fetch_trade():
     """Exports, imports (current US$) and trade balance (% GDP) -- one fetch
-    of countryeconomy.com/trade/balance, three figures per country."""
+    of countryeconomy.com/trade/balance, three figures per country. Covers
+    PAISES plus SECTOR_EXTERNO_EXTRA in the same pass (same page already
+    has every country's row, no extra request for the 4 extra countries)."""
     html = _fetch_text(TRADE_BALANCE_URL)
     out = {}
-    for _, slug in PAISES:
+    for _, slug in PAISES + SECTOR_EXTERNO_EXTRA:
         row = _row_html(html, "/trade/balance/", slug)
         if not row:
             out[slug] = (None, None, None)
@@ -169,6 +187,23 @@ def fetch_trade():
         # plain[0] = coverage rate, plain[1] = trade balance % GDP
         balanza_pib = plain[1] if len(plain) > 1 else None
         out[slug] = (exportaciones, importaciones, balanza_pib)
+    return out
+
+
+def fetch_sector_externo_extra():
+    """Trade-only entries for SECTOR_EXTERNO_EXTRA countries (no CPI/
+    unemployment/deficit -- not needed, these countries only appear in
+    page 1's Sector Externo table)."""
+    trade = fetch_trade()
+    out = []
+    for nombre, slug in SECTOR_EXTERNO_EXTRA:
+        exportaciones, importaciones, balanza_pib = trade.get(slug, (None, None, None))
+        out.append({
+            "pais": nombre,
+            "balanza_comercial_pib": balanza_pib,
+            "exportaciones_usd": exportaciones,
+            "importaciones_usd": importaciones,
+        })
     return out
 
 
