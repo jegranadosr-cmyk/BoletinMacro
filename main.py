@@ -25,8 +25,15 @@ DIAS_ES = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "dom
 # usuario 2026-11-01.
 REGIONES = [
     "Alemania", "Bangladesh", "China", "Colombia", "Corea del Sur", "EE.UU.",
-    "España", "Francia", "India", "Italia", "Japón", "Reino Unido", "Vietnam",
+    "España", "Francia", "India", "Inglaterra", "Italia", "Japón", "Vietnam",
 ]
+# "Inglaterra" (pedido explicito del usuario 2026-11-01, antes "Reino Unido")
+# es solo una etiqueta -- el dato sigue siendo del Reino Unido completo en
+# todas las columnas (PIB, inflacion, tasa BC, bono 10A, rating, comercio
+# exterior, informalidad). Inglaterra no tiene banco central, mercado de
+# deuda soberana ni calificacion crediticia propios -- esas cosas solo
+# existen a nivel Reino Unido, asi que no hay una version "solo Inglaterra"
+# de la mayoria de estas cifras para usar en su lugar.
 # Las 13 regiones son paises soberanos (ya no incluye el agregado Eurozona).
 REGIONES_SOBERANOS = REGIONES
 
@@ -121,7 +128,7 @@ def build_data():
         "Francia": "Eurozona", "Alemania": "Eurozona", "Italia": "Eurozona", "España": "Eurozona",
         "EE.UU.": "EE.UU.", "China": "China", "Japón": "Japón", "Colombia": "Colombia",
         "India": "India", "Corea del Sur": "Corea del Sur",
-        "Reino Unido": "Reino Unido", "Vietnam": "Vietnam", "Bangladesh": "Bangladesh",
+        "Inglaterra": "Inglaterra", "Vietnam": "Vietnam", "Bangladesh": "Bangladesh",
     }
     tasas_por_region = {}
     for pais in REGIONES:

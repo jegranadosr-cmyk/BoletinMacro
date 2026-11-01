@@ -54,7 +54,7 @@ RATINGS_URL = "https://countryeconomy.com/ratings"
 TE_RATING_URL = "https://tradingeconomics.com/{te_slug}/rating"
 
 PAISES = [
-    ("Reino Unido", "uk"),
+    ("Inglaterra", "uk"),
     ("Francia", "france"),
     ("Alemania", "germany"),
     ("Italia", "italy"),

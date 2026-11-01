@@ -43,7 +43,7 @@ BASE = "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}?for
 PAISES = [
     ("Colombia", "COL"),
     ("EE.UU.", "USA"),
-    ("Reino Unido", "GBR"),
+    ("Inglaterra", "GBR"),
     ("Francia", "FRA"),
     ("Alemania", "DEU"),
     ("Italia", "ITA"),

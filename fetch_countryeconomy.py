@@ -54,7 +54,7 @@ TE_UNEMPLOYMENT_URL = "https://tradingeconomics.com/{slug}/unemployment-rate"
 PAISES = [
     ("Colombia", "colombia"),
     ("EE.UU.", "usa"),
-    ("Reino Unido", "uk"),
+    ("Inglaterra", "uk"),
     ("Francia", "france"),
     ("Alemania", "germany"),
     ("Italia", "italy"),

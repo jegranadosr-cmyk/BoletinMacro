@@ -158,7 +158,7 @@ def fetch_south_korea():
 
 
 def fetch_uk():
-    return _simple_rate("Reino Unido", "uk", "BOE")
+    return _simple_rate("Inglaterra", "uk", "BOE")
 
 
 def fetch_vietnam():

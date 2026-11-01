@@ -35,7 +35,7 @@ HORIZONS = (1, 5)
 PAISES = [
     ("Colombia", "COL"),
     ("EE.UU.", "USA"),
-    ("Reino Unido", "GBR"),
+    ("Inglaterra", "GBR"),
     ("Francia", "FRA"),
     ("Alemania", "DEU"),
     ("Italia", "ITA"),
