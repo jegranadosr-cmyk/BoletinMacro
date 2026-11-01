@@ -22,6 +22,12 @@ regular overview tables, but NOT for CPI or unemployment -- those two come
 from TradingEconomics' per-indicator page meta description instead (plain
 server-rendered HTML, no JS needed), same trick used elsewhere in this
 bulletin (bond yields in fetch_debt_bonds.py, etc).
+
+China/South Korea/India (added 2026-11-01): covered for CPI on
+countryeconomy.com, but NOT for unemployment (checked directly against the
+overview table) -- unemployment for these three also comes from the
+TradingEconomics fallback, same mechanism, independent of the CPI fallback
+set since these three don't need it for CPI.
 """
 import re
 import socket
@@ -61,9 +67,13 @@ PAISES = [
     ("Bangladesh", "bangladesh"),
 ]
 
-# CPI/unemployment not reliably available on countryeconomy.com for these --
+# CPI not reliably available on countryeconomy.com for these -- read from
+# TradingEconomics instead (see module docstring).
+TE_CPI_FALLBACK_SLUGS = {"vietnam", "bangladesh"}
+
+# Unemployment not reliably available on countryeconomy.com for these --
 # read from TradingEconomics instead (see module docstring).
-TE_FALLBACK_SLUGS = {"vietnam", "bangladesh"}
+TE_UNEMPLOYMENT_FALLBACK_SLUGS = {"vietnam", "bangladesh", "china", "south-korea", "india"}
 
 
 def _fetch_text(url, timeout=20):
@@ -119,7 +129,7 @@ def fetch_cpi_yoy():
     html = _fetch_text(CPI_URL)
     out = {}
     for _, slug in PAISES:
-        if slug in TE_FALLBACK_SLUGS:
+        if slug in TE_CPI_FALLBACK_SLUGS:
             out[slug] = _te_meta_percent(TE_CPI_URL.format(slug=slug))
             continue
         row = _row_html(html, "/countries-cpi/", slug)
@@ -132,7 +142,7 @@ def fetch_unemployment():
     html = _fetch_text(UNEMPLOYMENT_URL)
     out = {}
     for _, slug in PAISES:
-        if slug in TE_FALLBACK_SLUGS:
+        if slug in TE_UNEMPLOYMENT_FALLBACK_SLUGS:
             out[slug] = _te_meta_percent(TE_UNEMPLOYMENT_URL.format(slug=slug))
             continue
         row = _row_html(html, "/unemployment/", slug)

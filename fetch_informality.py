@@ -15,6 +15,21 @@ NOT covered for the USA, China or Japan -- none of the three report this
 indicator to ILOSTAT in a comparable harmonized series (shown as "-"; this
 is a genuine reporting gap, not a scraping failure).
 
+UK excluded on purpose (verified 2026-11-01, see EXCLUDE_CODES): ILOSTAT's
+only series for the UK is sourced from EU-SILC ("employees without a
+written contract" used as the informality proxy there), and it stops in
+2018 -- the UK left EU-SILC after Brexit, so this series was discontinued
+and was never on the same ICLS-standard LFS basis the rest of this
+bulletin's countries use anyway. Worse, it's a clear outlier: it shows
+~20%, while independent press reporting of more current ILO modelled
+estimates (Euronews, Aug 2024, citing ILO) puts the UK at ~6.5% -- in line
+with its EU peers (France ~3.6%, Germany ~2.5%, Spain ~2.6%, Italy ~3.8%
+per that same reporting), not an outlier among them. Since that lower
+figure isn't available from a live, re-fetchable ILOSTAT series (only
+from a secondary news summary), showing it here would mean hand-typing a
+number that can silently go stale -- so UK is treated like the USA/China/
+Japan gaps instead: "-", with this note instead of a guessed figure.
+
 Reporting frequency varies by country (monthly/quarterly/annual, mixed
 within the same dataset) -- _parse_period() orders periods chronologically
 regardless of granularity so "latest" is always correct.
@@ -49,6 +64,9 @@ PAISES = [
     ("Vietnam", "VNM"),
     ("Bangladesh", "BGD"),
 ]
+
+# Codes with real ILOSTAT data that's excluded anyway -- see module docstring.
+EXCLUDE_CODES = {"GBR"}
 
 
 def _fetch_text(url, timeout=30):
@@ -89,6 +107,6 @@ def fetch_informalidad():
 
     out = []
     for nombre, code in PAISES:
-        entry = latest_by_code.get(code)
+        entry = latest_by_code.get(code) if code not in EXCLUDE_CODES else None
         out.append({"pais": nombre, "informalidad_pct": entry[1] if entry else None})
     return out

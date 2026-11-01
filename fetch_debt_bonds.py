@@ -9,7 +9,20 @@ independent reporting (Oct 2026):
   from tradingeconomics.com's live quote span instead. Bangladesh isn't
   tracked on either site (no comparable sovereign bond market data
   available there) -- shown as "-".
-- Ratings: countryeconomy.com ratings overview table (all 13).
+- Ratings: countryeconomy.com ratings overview table (all 13) -- except
+  Vietnam's Moody's/S&P cells, which are blank there (genuinely missing,
+  not just unrated: Vietnam IS rated by both in reality, Ba2/BB+ as of
+  2025-2026) -- those two are filled in from tradingeconomics.com/vietnam/
+  rating's meta description instead (verified 2026-11-01 against multiple
+  independent press sources). Vietnam's Fitch rating, sourced from
+  countryeconomy.com like everyone else's, was cross-checked the same way
+  and found to lag real-time (shows "BB", current sovereign issuer rating
+  is "BB+" per Fitch's own June-2025 affirmation) -- same class of staleness
+  previously found for the US's Fitch rating on this site. Per that
+  precedent, this is NOT hand-corrected here (a daily automated pipeline
+  shouldn't silently override a live-scraped value with a hand-typed one
+  that will itself go stale next time Fitch acts) -- documented here and in
+  the bulletin's footnote instead.
 
 Sovereign risk is NOT part of this module -- see fetch_cds.py for the real
 5-year CDS spread (a review on 2026-10-29 correctly flagged that this
@@ -38,6 +51,7 @@ BONDS_URL = "https://countryeconomy.com/bonds"
 COLOMBIA_BOND_URL = "https://countryeconomy.com/bonds/colombia"
 TE_BOND_URL = "https://tradingeconomics.com/{te_slug}/government-bond-yield"
 RATINGS_URL = "https://countryeconomy.com/ratings"
+TE_RATING_URL = "https://tradingeconomics.com/{te_slug}/rating"
 
 PAISES = [
     ("Reino Unido", "uk"),
@@ -59,6 +73,11 @@ PAISES = [
 # its own page -- fetched live from tradingeconomics.com instead. Slug is
 # the same as countryeconomy.com's here, conveniently.
 TE_BOND_SLUGS = {"china", "south-korea", "vietnam"}
+
+# Countries missing Moody's and/or S&P on countryeconomy.com's ratings table
+# (genuinely rated by those agencies in reality, just not shown there) --
+# filled in from tradingeconomics.com's ratings page instead.
+TE_RATING_FALLBACK_SLUGS = {"vietnam"}
 
 
 def _fetch_text(url, timeout=20):
@@ -105,6 +124,24 @@ def fetch_bond_yields():
     return out
 
 
+def _te_rating(slug):
+    """Moody's / S&P from TradingEconomics' ratings page meta description
+    (e.g. "Standard & Poor's credit rating for Vietnam stands at BB+ ...
+    Moody's credit rating for Vietnam was last set at Ba2 ..."). Fitch isn't
+    reliably present in this summary, so it's not parsed here."""
+    try:
+        html = _fetch_text(TE_RATING_URL.format(te_slug=slug))
+    except Exception:
+        return None, None
+    m = re.search(r'id="metaDesc"[^>]*content="([^"]*)"', html)
+    if not m:
+        return None, None
+    desc = m.group(1)
+    sp = re.search(r"Poor\S*\s*credit rating for [^.]*?stands at ([A-Za-z0-9+\-]+)", desc)
+    moodys = re.search(r"Moody\S*\s*credit rating for [^.]*?was last set at ([A-Za-z0-9+\-]+)", desc)
+    return (moodys.group(1) if moodys else None, sp.group(1) if sp else None)
+
+
 def fetch_ratings():
     """Moody's / S&P / Fitch sovereign credit ratings from the overview table.
 
@@ -114,7 +151,9 @@ def fetch_ratings():
     this module covered them -- their Moody's/S&P cells were blank <td></td>,
     not missing data). Parsed per-cell rather than requiring all 3 to be
     present, so a partially-rated country still surfaces the rating(s) it
-    does have.
+    does have. For slugs in TE_RATING_FALLBACK_SLUGS, a still-missing
+    Moody's/S&P after that is filled in from TradingEconomics (see module
+    docstring -- Vietnam is rated by both in reality, just not shown here).
     """
     html = _fetch_text(RATINGS_URL)
     out = {}
@@ -133,6 +172,15 @@ def fetch_ratings():
         while len(vals) < 3:
             vals.append(None)
         out[slug] = tuple(vals)
+
+    for slug in TE_RATING_FALLBACK_SLUGS:
+        moodys, sp, fitch = out.get(slug, (None, None, None))
+        if moodys is None or sp is None:
+            te_moodys, te_sp = _te_rating(slug)
+            moodys = moodys or te_moodys
+            sp = sp or te_sp
+            out[slug] = (moodys, sp, fitch)
+
     return out
 
 
