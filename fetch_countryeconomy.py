@@ -29,12 +29,13 @@ overview table) -- unemployment for these three also comes from the
 TradingEconomics fallback, same mechanism, independent of the CPI fallback
 set since these three don't need it for CPI.
 
-Indonesia/Thailand/Cambodia/Philippines/Singapore (added 2026-11-01): only
-used for page 1's "Sector externo" table (pedido explicito del usuario),
-not the other two page-1 tables, so only trade balance/exports/imports are
-fetched for them (see SECTOR_EXTERNO_EXTRA/fetch_sector_externo_extra())
--- no CPI, unemployment, deficit or growth, since none of that is
-displayed for them. All 5 confirmed covered on countryeconomy.com/trade/balance.
+Indonesia/Thailand/Cambodia/Philippines/Singapore/Hong Kong/Taiwan (added
+2026-11-01): only used for page 1's "Sector externo" table (pedido
+explicito del usuario), not the other two page-1 tables, so only trade
+balance/exports/imports are fetched for them (see SECTOR_EXTERNO_EXTRA/
+fetch_sector_externo_extra()) -- no CPI, unemployment, deficit or growth,
+since none of that is displayed for them. All 7 confirmed covered on
+countryeconomy.com/trade/balance.
 """
 import re
 import socket
@@ -90,6 +91,8 @@ SECTOR_EXTERNO_EXTRA = [
     ("Camboya", "cambodia"),
     ("Filipinas", "philippines"),
     ("Singapur", "singapore"),
+    ("Hong Kong", "hong-kong"),
+    ("Taiwán", "taiwan"),
 ]
 
 
