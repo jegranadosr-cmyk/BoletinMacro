@@ -169,7 +169,11 @@ VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE_HEIGHT_PX // 
 # identicos entre paginas, solo cambia cuanto alto captura el screenshot.
 PAGE1_HEIGHT_PX = 3960
 PAGE1_VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE1_HEIGHT_PX // DEVICE_SCALE}
-PAGE2_HEIGHT_PX = 3220
+# Mismo tamano que pagina 1 (pedido explicito del usuario 2026-11-01) --
+# antes pagina 2 tenia su propio lienzo mas chico; el CSS de pagina 2
+# (.boletin-table-dense2) se recalibro para llenar el espacio extra sin
+# dejar blancos muertos, en vez de simplemente estirar el mismo contenido.
+PAGE2_HEIGHT_PX = 3960
 PAGE2_VIEWPORT = {"width": PAGE_WIDTH_PX // DEVICE_SCALE, "height": PAGE2_HEIGHT_PX // DEVICE_SCALE}
 
 _VIEWPORT_BY_TEMPLATE = {"page1.html": PAGE1_VIEWPORT, "page2.html": PAGE2_VIEWPORT}
