@@ -1,10 +1,13 @@
 name: Boletin Macro Unvesting diario
 
 on:
-  # Envio automatico diario desactivado: este boletin (diseno "Siete
-  # Magnificas") duplicaba el envio por Telegram del boletin "Lupa al
-  # mercado" del otro repo. Se deja workflow_dispatch para poder correrlo
-  # a mano si hace falta.
+  # Envio automatico diario reactivado (pedido explicito del usuario
+  # 2026-11-02). Minuto 7 en vez de en punto -- GitHub documenta que los
+  # cron en punto (minuto 0) sufren mas congestion/retraso en todo el
+  # mundo; ya se confirmo este problema una vez en este mismo repo
+  # (iteracion 2026-10-30) y se resolvio moviendo el minuto.
+  schedule:
+    - cron: "7 12 * * *"
   workflow_dispatch: {}
 
 jobs:
