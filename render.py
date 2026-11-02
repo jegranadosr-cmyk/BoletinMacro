@@ -186,6 +186,13 @@ def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
     viewport is cropped rather than resized). Page 2 uses a taller canvas
     than the rest (see PAGE2_VIEWPORT) since it keeps growing with more
     countries and the font isn't meant to shrink to compensate.
+
+    Waits on document.fonts.ready before measuring/capturing anything --
+    without it, a fixed sleep can fire before the Inter webfont swaps in,
+    so the captured/measured height reflects the fallback font's metrics
+    instead of the real ones, silently invalidating any CSS calibration
+    done against it (found 2026-11-01 while debugging unexplained PDF
+    page overflow).
     """
     os.makedirs(out_dir, exist_ok=True)
 
@@ -205,8 +212,9 @@ def render_bulletin(data, out_dir, pages=("page1.html", "page2.html")):
                 viewport = _VIEWPORT_BY_TEMPLATE.get(template_name, VIEWPORT)
                 bpage = browser.new_page(viewport=viewport, device_scale_factor=DEVICE_SCALE)
                 bpage.goto("file:///" + tmp_path.replace("\\", "/"))
+                bpage.evaluate("document.fonts.ready")
                 bpage.evaluate(f"document.querySelector('.page').style.minHeight = '{viewport['height']}px'")
-                bpage.wait_for_timeout(400)
+                bpage.wait_for_timeout(200)
                 out_path = os.path.join(out_dir, f"page{i}.png")
                 bpage.screenshot(path=out_path)
                 out_paths.append(out_path)
@@ -243,7 +251,8 @@ def render_pdf(data, out_dir, template_name="pdf.html", filename="boletin.pdf"):
             browser = p.chromium.launch()
             bpage = browser.new_page(viewport={"width": VIEWPORT["width"], "height": pdf_height})
             bpage.goto("file:///" + tmp_path.replace("\\", "/"))
-            bpage.wait_for_timeout(400)
+            bpage.evaluate("document.fonts.ready")
+            bpage.wait_for_timeout(200)
             bpage.pdf(
                 path=out_path,
                 width=f"{VIEWPORT['width']}px",
