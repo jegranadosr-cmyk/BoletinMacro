@@ -22,7 +22,7 @@
       <thead><tr>
         <th>País</th><th class="num">PIB 1A</th>
         <th class="num">Inflación</th><th class="ctr">Tasa BC</th><th class="num">Tasa real</th>
-        <th class="num">Balance Fiscal</th><th class="num">Informalidad</th>
+        <th class="num">Balance Fiscal</th><th class="num">Deuda/PIB</th>
       </tr></thead>
       <tbody>
       {% for d in macro_indicadores %}
@@ -34,7 +34,7 @@
           <td class="ctr">{{ rc.tasa_label or '-' }}</td>
           <td class="num">{{ pct_span(rc.tasa_real) if rc.tasa_real is defined else '-' }}</td>
           <td class="num">{{ pct_span(d.deficit_fiscal_pib) }}</td>
-          <td class="num">{{ level_pct(d.informalidad_pct) }}</td>
+          <td class="num">{{ level_pct(d.deuda_pib) }}</td>
         </tr>
       {% endfor %}
       </tbody>

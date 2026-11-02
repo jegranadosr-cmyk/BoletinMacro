@@ -8,9 +8,9 @@ import fetch_countryeconomy as fce
 import fetch_eurostat as feu
 import fetch_growth as fg
 import fetch_rates as fr
+import fetch_debt_bonds as fdb
 import fetch_demographics as fdem
 import fetch_reserves as fres
-import fetch_informality as finf
 import render as rd
 import send_telegram as st
 
@@ -28,11 +28,11 @@ REGIONES = [
 ]
 # "Inglaterra" (pedido explicito del usuario 2026-11-01, antes "Reino Unido")
 # es solo una etiqueta -- el dato sigue siendo del Reino Unido completo en
-# todas las columnas (PIB, inflacion, tasa BC, bono 10A, rating, comercio
-# exterior, informalidad). Inglaterra no tiene banco central, mercado de
-# deuda soberana ni calificacion crediticia propios -- esas cosas solo
-# existen a nivel Reino Unido, asi que no hay una version "solo Inglaterra"
-# de la mayoria de estas cifras para usar en su lugar.
+# todas las columnas (PIB, inflacion, tasa BC, deuda/PIB, comercio exterior).
+# Inglaterra no tiene banco central, mercado de deuda soberana ni
+# calificacion crediticia propios -- esas cosas solo existen a nivel Reino
+# Unido, asi que no hay una version "solo Inglaterra" de la mayoria de estas
+# cifras para usar en su lugar.
 # Las 13 regiones son paises soberanos (ya no incluye el agregado Eurozona).
 
 
@@ -77,12 +77,13 @@ def build_data():
         else:
             errors.append(f"HICP {pais}: sin dato, se mantiene el IPC nacional")
 
-    # Tasa de informalidad laboral (ILOSTAT) -- sin cobertura para EE.UU.,
-    # China y Japon (no reportan este indicador en una serie comparable).
-    r, err = safe(finf.fetch_informalidad)
-    informalidad_by_country = {d["pais"]: d.get("informalidad_pct") for d in r} if not err else {}
+    # Deuda/PIB (countryeconomy.com) para las 13 regiones, incluido
+    # Bangladesh -- reemplaza la columna de informalidad (pedido explicito
+    # del usuario 2026-11-02).
+    r, err = safe(fdb.fetch_debt_to_gdp_por_pais)
+    deuda_by_country = {d["pais"]: d.get("deuda_pib") for d in r} if not err else {}
     if err:
-        errors.append(f"Informalidad: {err}")
+        errors.append(f"DeudaPIB: {err}")
 
     macro_indicadores = []
     for pais in REGIONES:
@@ -102,7 +103,7 @@ def build_data():
             "exportaciones_usd": exportaciones,
             "importaciones_usd": importaciones,
             "exportaciones_netas_usd": _exportaciones_netas(exportaciones, importaciones),
-            "informalidad_pct": informalidad_by_country.get(pais),
+            "deuda_pib": deuda_by_country.get(pais),
         })
     data["macro_indicadores"] = macro_indicadores
 

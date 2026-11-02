@@ -96,9 +96,24 @@ def _extract_by_slug(html, base_path, slug):
     return float(m.group(1)) if m else None
 
 
+# Bangladesh IS on the debt-to-GDP overview table (unlike bonds/ratings,
+# where it's genuinely missing -- see module docstring) -- added here only,
+# not to PAISES, so bonds/ratings keep excluding it while this table doesn't.
+DEBT_SLUGS = PAISES + [("Bangladesh", "bangladesh")]
+
+
 def fetch_debt_to_gdp():
     html = _fetch_text(DEBT_URL)
-    return {slug: _extract_by_slug(html, "/national-debt/", slug) for _, slug in PAISES}
+    return {slug: _extract_by_slug(html, "/national-debt/", slug) for _, slug in DEBT_SLUGS}
+
+
+def fetch_debt_to_gdp_por_pais():
+    """Deuda/PIB keyed by country display name (vs. fetch_debt_to_gdp's slug
+    keys) for the 13 REGIONES of page 1's "Crecimiento..." table (pedido
+    explicito del usuario 2026-11-02, reemplaza la columna de informalidad)
+    -- no necesita bonos ni ratings, que no se muestran ahi."""
+    debt = fetch_debt_to_gdp()
+    return [{"pais": nombre, "deuda_pib": debt.get(slug)} for nombre, slug in DEBT_SLUGS]
 
 
 def fetch_bond_yields():
